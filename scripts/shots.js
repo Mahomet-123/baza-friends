@@ -3,12 +3,12 @@ const puppeteer = require('puppeteer-core');
 const path = require('path');
 
 const OUT = __dirname;
-const URL = 'http://localhost:8000/';
+const URL = 'http://127.0.0.1:8000/';
 
 (async () => {
   const b = await puppeteer.launch({
     executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-    headless: 'new', args: ['--no-sandbox']
+    headless: 'new', args: ['--no-sandbox', '--no-proxy-server']
   });
 
   // --- мобильный ---

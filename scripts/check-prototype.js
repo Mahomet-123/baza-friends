@@ -3,7 +3,7 @@
 const puppeteer = require('puppeteer-core');
 
 const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const URL = 'http://localhost:8000/';
+const URL = 'http://127.0.0.1:8000/';
 
 const results = [];
 function check(name, ok, extra) {
@@ -15,7 +15,7 @@ function check(name, ok, extra) {
   const browser = await puppeteer.launch({
     executablePath: CHROME,
     headless: 'new',
-    args: ['--no-sandbox', '--disable-dev-shm-usage']
+    args: ['--no-sandbox', '--disable-dev-shm-usage', '--no-proxy-server']
   });
   const page = await browser.newPage();
   await page.setViewport({ width: 500, height: 900, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
