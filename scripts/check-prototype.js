@@ -180,6 +180,24 @@ function check(name, ok, extra) {
   });
   check('Полноэкранный просмотр открылся', lb.visible && lb.src.startsWith('data:image/svg+xml'), JSON.stringify(lb));
 
+  // 6a. Фото в полном экране реально ВИДНО: загружено и не перекрыто подложкой.
+  // Баг был: .lb-back (position:absolute) рисуется поверх .lb-img (position:static)
+  // и закрывает снимок чёрным — проверяем элемент верхнего слоя в центре картинки.
+  const lbVis = await page.evaluate(() => {
+    const im = document.querySelector('#lightbox .lb-img');
+    if (!im) return { ok: false, why: 'нет .lb-img' };
+    const r = im.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const top = document.elementFromPoint(cx, cy);
+    return {
+      ok: im.complete && im.naturalWidth > 0 && top === im,
+      why: 'loaded=' + (im.complete && im.naturalWidth > 0) + ' top=' + (top ? top.tagName + '.' + top.className : 'нет'),
+      rect: Math.round(r.width) + 'x' + Math.round(r.height),
+      natural: im.naturalWidth + 'x' + im.naturalHeight
+    };
+  });
+  check('В полном экране фото видно (не перекрыто подложкой)', lbVis.ok, JSON.stringify(lbVis));
+
   // листание в полном экране
   await page.click('#lightbox .lb-nav.next');
   await new Promise(r => setTimeout(r, 250));
@@ -280,6 +298,21 @@ function check(name, ok, extra) {
     return { visible: !!(l && !l.classList.contains('hidden')), cap: l ? l.querySelector('.lb-cap').textContent : '' };
   });
   check('Фото территории открывается на весь экран', terrLb.visible && terrLb.cap.length > 0, JSON.stringify(terrLb));
+
+  // 10г. В полном экране фото территории реально видно: загружено и не перекрыто подложкой
+  const terrLbVis = await page.evaluate(() => {
+    const im = document.querySelector('#lightbox .lb-img');
+    if (!im) return { ok: false, why: 'нет .lb-img' };
+    const r = im.getBoundingClientRect();
+    const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return {
+      ok: im.complete && im.naturalWidth > 0 && top === im,
+      why: 'src=' + (im.getAttribute('src') || '') + ' loaded=' + (im.complete && im.naturalWidth > 0) +
+           ' top=' + (top ? top.tagName + '.' + top.className : 'нет'),
+      natural: im.naturalWidth + 'x' + im.naturalHeight
+    };
+  });
+  check('Фото территории в полном экране видно', terrLbVis.ok, JSON.stringify(terrLbVis));
   await page.click('#lightbox .lb-close');
   await new Promise(r => setTimeout(r, 250));
 
