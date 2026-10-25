@@ -99,10 +99,41 @@ function check(name, ok, extra) {
   });
   check('При закреплении активная — во всю ширину, остальные — компактные',
     pinned.pinned && pinned.activeW > pinned.otherW * 1.8, JSON.stringify(pinned));
+
+  // 3е. Активная категория всегда внизу (последней строкой), какая бы ни была выбрана
+  const activeAlwaysLast = await page.evaluate(async () => {
+    const bar = document.querySelector('.cat-bar');
+    const res = [];
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    for (const id of ['room', 'cottage', 'house']) {
+      document.querySelector('[data-tile="' + id + '"]').click();
+      await wait(500);
+      window.scrollTo({ top: 900, behavior: 'instant' });   // прерываем плавную прокрутку
+      await wait(450);
+      const active = document.querySelector('.cat-tile.active');
+      const others = [...document.querySelectorAll('.cat-tile:not(.active)')];
+      const a = active.getBoundingClientRect();
+      const o = others.map(x => x.getBoundingClientRect());
+      res.push({
+        id: id,
+        activeTop: Math.round(a.top),
+        othersTop: Math.round(Math.min(...o.map(r => r.top))),
+        activeW: Math.round(a.width),
+        otherW: Math.round(Math.max(...o.map(r => r.width))),
+        pinned: bar.classList.contains('pinned')
+      });
+    }
+    return res;
+  });
+  check('Активная категория всегда внизу, переключаемые — сверху (любая активная)',
+    activeAlwaysLast.every(r => r.pinned && r.activeTop > r.othersTop && r.activeW > r.otherW * 1.8),
+    JSON.stringify(activeAlwaysLast));
   await page.evaluate(() => window.scrollTo(0, 0));
   await new Promise(r => setTimeout(r, 300));
 
   // 4. Модалка по клику на карточку
+  await page.evaluate(() => document.querySelector('[data-tile="house"]').click());
+  await new Promise(r => setTimeout(r, 500));
   await page.click('#cat-house [data-details]');
   await new Promise(r => setTimeout(r, 400));
   const modal = await page.evaluate(() => {

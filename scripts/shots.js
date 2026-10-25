@@ -22,10 +22,20 @@ const URL = 'http://localhost:8000/';
   await new Promise(r => setTimeout(r, 500));
   await m.screenshot({ path: path.join(OUT, 'm1-tiles.png') });
 
-  // закреплённая панель: активная во всю ширину, остальные — компактные чипы
-  await m.evaluate(() => window.scrollTo(0, 1200));
+  // закреплённая панель: активная всегда внизу, переключаемые — чипами сверху
+  // сначала последняя категория в списке
+  await m.evaluate(() => document.querySelector('[data-tile="house"]').click());
+  await new Promise(r => setTimeout(r, 700));
+  await m.evaluate(() => window.scrollTo({ top: 1200, behavior: 'instant' }));
   await new Promise(r => setTimeout(r, 500));
   await m.screenshot({ path: path.join(OUT, 'm1b-pinned.png') });
+
+  // затем первая категория — активная всё равно должна встать вниз
+  await m.evaluate(() => document.querySelector('[data-tile="room"]').click());
+  await new Promise(r => setTimeout(r, 700));
+  await m.evaluate(() => window.scrollTo({ top: 1200, behavior: 'instant' }));
+  await new Promise(r => setTimeout(r, 500));
+  await m.screenshot({ path: path.join(OUT, 'm1c-pinned-room.png') });
   await m.evaluate(() => window.scrollTo(0, 0));
   await new Promise(r => setTimeout(r, 400));
 

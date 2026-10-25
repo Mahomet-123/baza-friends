@@ -308,9 +308,11 @@ form .row label { flex: 1; }
   .cat-tile .tile-price, .cat-tile .tile-chev { display: none; }
   .cat-tile .tile-ico svg { width: 18px; height: 18px; }
 
-  /* когда панель закреплена: активная категория во всю ширину, остальные — свёрнутые чипы */
+  /* когда панель закреплена: активная категория всегда во всю ширину и всегда последней строкой,
+     остальные — свёрнутые чипы сверху (независимо от того, какая категория выбрана) */
   .cat-bar.pinned .cat-tiles { display: flex; flex-wrap: wrap; gap: 6px; }
-  .cat-bar.pinned .cat-tile.active { flex: 1 0 100%; justify-content: flex-start; padding: 8px 12px; gap: 10px; }
+  .cat-bar.pinned .cat-tile { order: 0; }
+  .cat-bar.pinned .cat-tile.active { order: 1; flex: 1 0 100%; justify-content: flex-start; padding: 8px 12px; gap: 10px; }
   .cat-bar.pinned .cat-tile.active .tile-txt { display: flex; flex-direction: row; align-items: baseline; gap: 8px; }
   .cat-bar.pinned .cat-tile.active .tile-short { display: none; }
   .cat-bar.pinned .cat-tile.active .tile-price { display: block; font-size: 13px; }
