@@ -152,114 +152,6 @@ function makeScene(kind,accent,code){
   return svgURI(head+defs+body+chip+'</svg>');
 }
 
-/* --- генератор фото-заглушек территории: отдельная иллюстрация на каждый объект --- */
-function makeTerrScene(kind){
-  var sky1='#CDEBFF', sky2='#EDF8FF';
-  var sea='#1D9E75', seaD='#12876A', seaL='#5DCAA5';
-  var sand='#EFD9A6', sandD='#DCC08A';
-  var grass='#6FBF73', grassD='#4E9E58';
-  var wood='#C98F52', woodD='#A9743C';
-  var pool='#4FB8DE', poolD='#2E96BC';
-  var dark='#2C3E3A', white='#FFFFFF', wall='#EDE7DC', roof='#0F6E56';
-  var head='<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">';
-  var defs='<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+sky1+'"/><stop offset="1" stop-color="'+sky2+'"/></linearGradient></defs>';
-  var b='';
-  if(kind==='beach'){
-    b='<rect width="800" height="600" fill="url(#g)"/>'+
-      '<circle cx="646" cy="118" r="58" fill="#FFE9A8"/>'+
-      '<rect y="330" width="800" height="150" fill="'+sea+'"/>'+
-      '<path d="M0 330 H800" stroke="'+seaD+'" stroke-width="8"/>'+
-      '<path d="M40 390 q40 -16 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0" fill="none" stroke="'+seaL+'" stroke-width="7" stroke-linecap="round"/>'+
-      '<path d="M0 470 Q200 446 400 470 T800 470 L800 600 L0 600 Z" fill="'+sand+'"/>'+
-      '<rect x="196" y="420" width="12" height="132" fill="'+wood+'"/>'+
-      '<path d="M202 420 q86 -96 172 0 z" fill="#E8654F"/>'+
-      '<path d="M202 420 q86 -96 172 0" fill="none" stroke="#C9543F" stroke-width="5"/>'+
-      '<ellipse cx="202" cy="552" rx="96" ry="16" fill="'+sandD+'"/>'+
-      '<rect x="470" y="466" width="220" height="26" rx="13" fill="'+white+'"/>'+
-      '<rect x="486" y="492" width="12" height="58" fill="'+woodD+'"/>'+
-      '<rect x="662" y="492" width="12" height="58" fill="'+woodD+'"/>';
-  } else if(kind==='pool'){
-    b='<rect width="800" height="600" fill="url(#g)"/>'+
-      '<rect y="300" width="800" height="300" fill="'+sand+'"/>'+
-      '<rect x="150" y="330" width="500" height="220" rx="18" fill="'+poolD+'"/>'+
-      '<rect x="168" y="348" width="464" height="184" rx="12" fill="'+pool+'"/>'+
-      '<path d="M200 400 q50 -18 100 0 t100 0 t100 0 t100 0" fill="none" stroke="#BFEAF6" stroke-width="8" stroke-linecap="round"/>'+
-      '<path d="M200 462 q50 -18 100 0 t100 0 t100 0" fill="none" stroke="#BFEAF6" stroke-width="7" stroke-linecap="round"/>'+
-      '<path d="M654 330 v108 M624 438 h60" stroke="'+wood+'" stroke-width="9" stroke-linecap="round" fill="none"/>'+
-      '<rect x="58" y="336" width="72" height="16" rx="8" fill="'+white+'"/>'+
-      '<rect x="60" y="352" width="9" height="38" fill="'+woodD+'"/>'+
-      '<rect x="120" y="352" width="9" height="38" fill="'+woodD+'"/>';
-  } else if(kind==='play'){
-    b='<rect width="800" height="600" fill="url(#g)"/>'+
-      '<rect y="380" width="800" height="220" fill="'+grass+'"/>'+
-      '<rect x="250" y="250" width="120" height="130" rx="10" fill="#EF9F27"/>'+
-      '<path d="M370 292 L520 470 h-58 L370 380 z" fill="#E8654F"/>'+
-      '<path d="M120 232 h170" stroke="'+wood+'" stroke-width="12" stroke-linecap="round"/>'+
-      '<path d="M150 232 v108 M260 232 v108" stroke="'+woodD+'" stroke-width="10" stroke-linecap="round"/>'+
-      '<rect x="168" y="300" width="34" height="46" rx="8" fill="#E8654F"/>'+
-      '<rect x="238" y="300" width="34" height="46" rx="8" fill="#5DCAA5"/>'+
-      '<ellipse cx="620" cy="470" rx="92" ry="22" fill="'+sand+'"/>'+
-      '<circle cx="580" cy="398" r="26" fill="#FFE9A8"/>';
-  } else if(kind==='parking'){
-    b='<rect width="800" height="600" fill="url(#g)"/>'+
-      '<rect y="360" width="800" height="240" fill="#B9B6AE"/>'+
-      '<rect y="360" width="800" height="14" fill="#9C9992"/>'+
-      '<g fill="#fff"><rect x="120" y="440" width="130" height="10" rx="5"/><rect x="320" y="440" width="130" height="10" rx="5"/><rect x="520" y="440" width="130" height="10" rx="5"/></g>'+
-      '<rect x="90" y="382" width="150" height="70" rx="12" fill="#E8654F"/>'+
-      '<rect x="290" y="382" width="150" height="70" rx="12" fill="'+white+'"/>'+
-      '<rect x="490" y="382" width="150" height="70" rx="12" fill="#4FB8DE"/>'+
-      '<rect x="80" y="330" width="580" height="16" rx="8" fill="'+wood+'"/>'+
-      '<rect x="110" y="346" width="12" height="70" fill="'+woodD+'"/>'+
-      '<rect x="618" y="346" width="12" height="70" fill="'+woodD+'"/>'+
-      '<circle cx="704" cy="300" r="54" fill="'+grassD+'"/>';
-  } else if(kind==='gazebo'){
-    b='<rect width="800" height="600" fill="url(#g)"/>'+
-      '<rect y="400" width="800" height="200" fill="'+grass+'"/>'+
-      '<path d="M240 252 L400 170 L560 252 Z" fill="'+woodD+'"/>'+
-      '<rect x="270" y="252" width="16" height="158" fill="'+wood+'"/>'+
-      '<rect x="514" y="252" width="16" height="158" fill="'+wood+'"/>'+
-      '<rect x="320" y="300" width="160" height="80" rx="8" fill="'+wood+'"/>'+
-      '<rect x="340" y="330" width="120" height="12" rx="6" fill="'+woodD+'"/>'+
-      '<ellipse cx="400" cy="404" rx="92" ry="18" fill="'+grassD+'"/>'+
-      '<circle cx="644" cy="326" r="46" fill="'+grassD+'"/>'+
-      '<rect x="638" y="356" width="12" height="52" fill="'+woodD+'"/>';
-  } else if(kind==='veranda'){
-    b='<rect width="800" height="600" fill="url(#g)"/>'+
-      '<rect y="330" width="800" height="270" fill="'+wood+'"/>'+
-      '<g stroke="'+woodD+'" stroke-width="6"><path d="M0 380 H800"/><path d="M0 440 H800"/><path d="M0 500 H800"/></g>'+
-      '<rect x="60" y="150" width="14" height="190" fill="'+woodD+'"/>'+
-      '<rect x="726" y="150" width="14" height="190" fill="'+woodD+'"/>'+
-      '<path d="M74 176 q326 60 652 0" fill="none" stroke="'+dark+'" stroke-width="4"/>'+
-      '<g fill="#FFE9A8"><circle cx="160" cy="196" r="11"/><circle cx="260" cy="212" r="11"/><circle cx="360" cy="220" r="11"/><circle cx="460" cy="220" r="11"/><circle cx="560" cy="212" r="11"/><circle cx="660" cy="196" r="11"/></g>'+
-      '<ellipse cx="330" cy="418" rx="112" ry="26" fill="'+white+'"/>'+
-      '<rect x="322" y="418" width="16" height="78" fill="'+woodD+'"/>'+
-      '<ellipse cx="330" cy="500" rx="42" ry="10" fill="'+woodD+'"/>'+
-      '<rect x="160" y="386" width="84" height="18" rx="8" fill="'+woodD+'"/>'+
-      '<rect x="170" y="404" width="12" height="84" fill="'+wood+'"/>'+
-      '<rect x="222" y="404" width="12" height="84" fill="'+wood+'"/>'+
-      '<rect x="416" y="386" width="84" height="18" rx="8" fill="'+woodD+'"/>'+
-      '<rect x="426" y="404" width="12" height="84" fill="'+wood+'"/>'+
-      '<rect x="478" y="404" width="12" height="84" fill="'+wood+'"/>'+
-      '<rect x="596" y="336" width="164" height="88" rx="8" fill="'+dark+'"/>'+
-      '<rect x="596" y="336" width="164" height="16" rx="8" fill="'+woodD+'"/>'+
-      '<g fill="#FFE9A8"><circle cx="626" cy="314" r="12"/><circle cx="676" cy="308" r="12"/><circle cx="726" cy="314" r="12"/></g>';
-  } else {
-    b='<rect width="800" height="600" fill="url(#g)"/>'+
-      '<rect y="400" width="800" height="200" fill="'+grass+'"/>'+
-      '<path d="M300 252 L400 190 L500 252 Z" fill="'+roof+'"/>'+
-      '<rect x="320" y="252" width="160" height="118" fill="'+wall+'"/>'+
-      '<rect x="372" y="300" width="58" height="70" rx="6" fill="'+woodD+'"/>'+
-      '<rect x="332" y="268" width="34" height="30" rx="5" fill="#CDEBFF"/>'+
-      '<rect x="436" y="268" width="34" height="30" rx="5" fill="#CDEBFF"/>'+
-      '<g fill="none" stroke="'+sea+'" stroke-width="12" stroke-linecap="round">'+
-        '<path d="M340 186 a90 90 0 0 1 120 0"/>'+
-        '<path d="M300 146 a140 140 0 0 1 200 0"/>'+
-        '<path d="M260 106 a190 190 0 0 1 280 0"/></g>'+
-      '<circle cx="400" cy="212" r="14" fill="'+sea+'"/>';
-  }
-  return svgURI(head+defs+b+'</svg>');
-}
-
 const CATEGORIES = [
   { id: 'room',    name_ru: 'Номера',         name_en: 'Rooms',             short_ru: 'Номера',      short_en: 'Rooms',     count: 7, price: 7000,  icon: 'bed' },
   { id: 'cottage', name_ru: 'Коттеджи',       name_en: 'Cottages',          short_ru: 'Коттеджи',    short_en: 'Cottages',  count: 5, price: 10000, icon: 'home' },
@@ -323,7 +215,7 @@ const TERRITORY = [
   { kind: 'veranda', icon: 'music',    name_ru: 'Веранда: кафе · дискотека', name_en: 'Veranda: cafe · disco' },
   { kind: 'wifi',    icon: 'wifi',     name_ru: 'Бесплатный Wi-Fi',          name_en: 'Free Wi-Fi' },
 ];
-TERRITORY.forEach(x => { x.photo = makeTerrScene(x.kind); });
+TERRITORY.forEach(x => { x.photo = 'assets/img/territory/' + x.kind + '.jpg'; });
 
 const DEFAULT_SETTINGS = {
   brandName: 'Объект',

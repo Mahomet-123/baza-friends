@@ -257,19 +257,20 @@ function check(name, ok, extra) {
   check('SVG-иконки отрисованы', home.icons > 10, 'иконок: ' + home.icons);
   check('Иконки в плитках и в блоке территории', home.tileIcons === 3 && home.terrIcons === 7, `плитки=${home.tileIcons} территория=${home.terrIcons}`);
 
-  // 10б. Территория: карточки с фотографиями
+  // 10б. Территория: карточки с реальными фотографиями (jpg из assets/img/territory)
   const terr = await page.evaluate(() => {
     const cards = [...document.querySelectorAll('.terr-card')];
     return {
       cards: cards.length,
       photos: cards.filter(c => {
         const img = c.querySelector('img');
-        return img && (img.getAttribute('src') || '').startsWith('data:image/svg+xml');
+        const src = (img && img.getAttribute('src')) || '';
+        return img && src.startsWith('assets/img/territory/') && src.endsWith('.jpg');
       }).length,
       captions: document.querySelectorAll('.terr-card figcaption').length
     };
   });
-  check('В блоке территории — 7 карточек с фото', terr.cards === 7 && terr.photos === 7 && terr.captions === 7, JSON.stringify(terr));
+  check('В блоке территории — 7 карточек с фото (jpg)', terr.cards === 7 && terr.photos === 7 && terr.captions === 7, JSON.stringify(terr));
 
   // 10в. Фото территории открывается на весь экран
   await page.click('.terr-card');
