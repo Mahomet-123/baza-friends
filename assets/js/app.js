@@ -5,7 +5,7 @@
   let settings = Object.assign({}, DEFAULT_SETTINGS, JSON.parse(localStorage.getItem('bf_settings') || '{}'));
   let openCat = 'room';                         // открытая категория в каталоге
   const gIdx = { detail: 0, modal: 0 };         // текущий кадр галереи по контексту
-  const lb = { unitId: null, idx: 0 };          // состояние лайтбокса (полный экран)
+  const lb = { list: [], idx: 0 };               // состояние лайтбокса (полный экран): список фото + текущий кадр
 
   const t = k => (I18N[lang] && I18N[lang][k]) || k;
   const unitById = id => UNITS.find(u => u.id === id);
@@ -54,36 +54,37 @@
   function renderHome() {
     const app = document.getElementById('app');
 
+    /* панель переключения категорий: одна на весь сайт, закрепляется при прокрутке */
     const tiles = CATEGORIES.map(cat => {
       const nm = lang === 'ru' ? cat.name_ru : cat.name_en;
-      return `<button class="cat-tile${openCat === cat.id ? ' active' : ''}" data-tile="${cat.id}">
+      const sh = lang === 'ru' ? cat.short_ru : cat.short_en;
+      const act = openCat === cat.id;
+      return `<button class="cat-tile${act ? ' active' : ''}" data-tile="${cat.id}" aria-pressed="${act}">
         <span class="tile-ico">${iconHTML(cat.icon, 22)}</span>
         <span class="tile-txt"><b>${nm}</b><small>${cat.count} ${unitWord(cat.count)}</small></span>
+        <span class="tile-short">${sh}</span>
         <span class="tile-price">${t('from')} ${cat.price.toLocaleString('ru-RU')} ₽</span>
         <span class="tile-chev">${iconHTML('chevron', 18)}</span>
       </button>`;
     }).join('');
 
+    /* карточки объектов: показываем только активную категорию — дублирующих заголовков нет */
     const cats = CATEGORIES.map(cat => {
       const cards = UNITS.filter(u => u.category === cat.id).map(cardHTML).join('');
-      const nm = lang === 'ru' ? cat.name_ru : cat.name_en;
       const open = openCat === cat.id;
       return `<section class="cat${open ? ' open' : ''}" id="cat-${cat.id}">
-        <button class="cat-head" data-head="${cat.id}" aria-expanded="${open}">
-          <span class="ch-ico">${iconHTML(cat.icon, 20)}</span>
-          <h2>${nm}</h2>
-          <span class="cat-count">${cat.count}</span>
-          <span class="price">${t('from')} ${cat.price.toLocaleString('ru-RU')} ${t('per_night')}</span>
-          <span class="cat-chev">${iconHTML('chevron', 18)}</span>
-        </button>
         <div class="grid"${open ? '' : ' hidden'}>${cards}</div>
       </section>`;
     }).join('');
 
-    const terr = TERRITORY.map(x => `<div class="terr">
-        <span class="terr-ico">${iconHTML(x.icon, 24)}</span>
-        <span>${lang === 'ru' ? x.name_ru : x.name_en}</span>
-      </div>`).join('');
+    /* территория: фото + подпись, фото открывается на весь экран */
+    const terr = TERRITORY.map((x, i) => `<figure class="terr-card" data-terr="${i}">
+        <img src="${x.photo}" alt="${lang === 'ru' ? x.name_ru : x.name_en}" loading="lazy">
+        <figcaption>
+          <span class="terr-ico">${iconHTML(x.icon, 16)}</span>
+          <span>${lang === 'ru' ? x.name_ru : x.name_en}</span>
+        </figcaption>
+      </figure>`).join('');
 
     app.innerHTML = `
       <section class="hero">
@@ -95,8 +96,10 @@
       </section>
       <section class="catalog wrap" id="catalog">
         <div class="sec-head"><h2>${t('catalog_title')}</h2><p>${t('catalog_sub')}</p></div>
-        <div class="cat-tiles">${tiles}</div>
-        ${cats}
+        <div class="cat-bar" id="catBar">
+          <div class="cat-tiles" role="group" aria-label="${t('catalog_title')}">${tiles}</div>
+        </div>
+        <div class="cat-sections">${cats}</div>
         <div class="rest-teaser">
           <h3>${iconHTML('utensils', 20)} ${t('restaurant_title')}</h3>
           <p>${t('restaurant_soon')}</p>
@@ -105,10 +108,42 @@
       <section class="territory wrap" id="territory">
         <div class="sec-head"><h2>${t('territory_title')}</h2><p>${t('territory_sub')}</p></div>
         <div class="terr-grid">${terr}</div>
+        <p class="terr-hint">${t('terr_hint')}</p>
       </section>
       <section class="cta wrap">
         <a class="btn" href="#catalog">${t('hero_cta')}</a>
       </section>`;
+
+    updatePin();
+  }
+
+  /* высота верхней шапки — от неё считаем, где закрепляется панель категорий */
+  function headerH() {
+    const h = document.querySelector('.site-header');
+    return h ? h.offsetHeight : 64;
+  }
+
+  /* панель категорий: помечаем «закреплённой», когда она прилипла к верху экрана */
+  function updatePin() {
+    const bar = document.getElementById('catBar');
+    if (!bar) return;
+    bar.classList.toggle('pinned', bar.getBoundingClientRect().top <= headerH() + 1);
+  }
+  let pinRaf = 0;
+  window.addEventListener('scroll', () => {
+    if (pinRaf) return;
+    pinRaf = requestAnimationFrame(() => { pinRaf = 0; updatePin(); });
+  }, { passive: true });
+  window.addEventListener('resize', updatePin);
+
+  /* переход к карточкам категории — с поправкой на шапку и закреплённую панель */
+  function scrollToCat(id) {
+    const sec = document.getElementById('cat-' + id);
+    if (!sec) return;
+    const bar = document.getElementById('catBar');
+    const barH = bar ? bar.offsetHeight : 0;
+    const top = window.scrollY + sec.getBoundingClientRect().top - barH - headerH() - 12;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
   }
 
   /* открытие/закрытие категории без перерисовки всей страницы */
@@ -119,10 +154,12 @@
       s.classList.toggle('open', isOpen);
       const g = s.querySelector('.grid');
       if (g) g.classList.toggle('hidden', !isOpen);
-      const h = s.querySelector('.cat-head');
-      if (h) h.setAttribute('aria-expanded', String(isOpen));
     });
-    document.querySelectorAll('[data-tile]').forEach(b => b.classList.toggle('active', b.dataset.tile === id));
+    document.querySelectorAll('[data-tile]').forEach(b => {
+      const on = b.dataset.tile === id;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
     openCat = open ? id : null;
   }
 
@@ -205,15 +242,19 @@
       setGallery(suffix, unitId, (gIdx[suffix] + d + u.photos.length) % u.photos.length);
     });
     g.querySelectorAll('.g-thumb').forEach(b => b.onclick = () => setGallery(suffix, unitId, parseInt(b.dataset.i, 10)));
-    const fs = g.querySelector('.g-fs'); if (fs) fs.onclick = () => openLightbox(unitId, gIdx[suffix]);
+    const fs = g.querySelector('.g-fs'); if (fs) fs.onclick = () => openLightbox(unitPhotos(u), gIdx[suffix]);
     addSwipe(g.querySelector('.g-view'),
       () => setGallery(suffix, unitId, (gIdx[suffix] - 1 + u.photos.length) % u.photos.length),
       () => setGallery(suffix, unitId, (gIdx[suffix] + 1) % u.photos.length));
   }
 
   /* ---------- лайтбокс (полный экран) ---------- */
-  function openLightbox(unitId, idx) {
-    lb.unitId = unitId; lb.idx = idx || 0;
+  /* работает с любым списком фото: {src, label} — и объекты, и территория */
+  function unitPhotos(u) {
+    return u.photos.map(p => ({ src: p.svg, label: t(p.labelKey) }));
+  }
+  function openLightbox(list, idx) {
+    lb.list = list || []; lb.idx = idx || 0;
     let el = document.getElementById('lightbox');
     if (!el) {
       el = document.createElement('div'); el.id = 'lightbox'; el.className = 'lightbox hidden';
@@ -238,16 +279,17 @@
     document.body.style.overflow = 'hidden';
   }
   function lbStep(d) {
-    const u = unitById(lb.unitId); if (!u) return;
-    lb.idx = (lb.idx + d + u.photos.length) % u.photos.length;
+    if (!lb.list.length) return;
+    lb.idx = (lb.idx + d + lb.list.length) % lb.list.length;
     renderLightbox();
   }
   function renderLightbox() {
-    const u = unitById(lb.unitId); if (!u) return;
     const el = document.getElementById('lightbox');
-    el.querySelector('.lb-img').src = u.photos[lb.idx].svg;
-    el.querySelector('.lb-cap').textContent = t(u.photos[lb.idx].labelKey);
-    el.querySelector('.lb-counter').textContent = (lb.idx + 1) + ' / ' + u.photos.length;
+    if (!el || !lb.list.length) return;
+    const p = lb.list[lb.idx];
+    el.querySelector('.lb-img').src = p.src;
+    el.querySelector('.lb-cap').textContent = p.label;
+    el.querySelector('.lb-counter').textContent = (lb.idx + 1) + ' / ' + lb.list.length;
   }
   function closeLightbox() {
     const el = document.getElementById('lightbox'); if (el) el.classList.add('hidden');
@@ -466,15 +508,13 @@
     const tile = e.target.closest('[data-tile]');
     if (tile) {
       setCatOpen(tile.dataset.tile, true);
-      const sec = document.getElementById('cat-' + tile.dataset.tile);
-      if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      scrollToCat(tile.dataset.tile);
       return;
     }
-    const head = e.target.closest('[data-head]');
-    if (head) {
-      const id = head.dataset.head;
-      const isOpen = head.getAttribute('aria-expanded') === 'true';
-      setCatOpen(id, !isOpen);
+    const terr = e.target.closest('[data-terr]');
+    if (terr) {
+      const list = TERRITORY.map(x => ({ src: x.photo, label: lang === 'ru' ? x.name_ru : x.name_en }));
+      openLightbox(list, parseInt(terr.dataset.terr, 10));
       return;
     }
     const d = e.target.closest('[data-details]');

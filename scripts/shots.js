@@ -22,6 +22,20 @@ const URL = 'http://localhost:8000/';
   await new Promise(r => setTimeout(r, 500));
   await m.screenshot({ path: path.join(OUT, 'm1-tiles.png') });
 
+  // закреплённая панель: активная во всю ширину, остальные — компактные чипы
+  await m.evaluate(() => window.scrollTo(0, 1200));
+  await new Promise(r => setTimeout(r, 500));
+  await m.screenshot({ path: path.join(OUT, 'm1b-pinned.png') });
+  await m.evaluate(() => window.scrollTo(0, 0));
+  await new Promise(r => setTimeout(r, 400));
+
+  // территория: лента с фотографиями
+  await m.evaluate(() => document.querySelector('.terr-grid').scrollIntoView({ block: 'center' }));
+  await new Promise(r => setTimeout(r, 500));
+  await m.screenshot({ path: path.join(OUT, 'm8-territory.png') });
+  await m.evaluate(() => window.scrollTo(0, 0));
+  await new Promise(r => setTimeout(r, 300));
+
   // открыть «2-этажные дома»
   await m.click('[data-tile="house"]');
   await new Promise(r => setTimeout(r, 600));
@@ -53,8 +67,8 @@ const URL = 'http://localhost:8000/';
   // админка с заявкой
   await m.evaluate(() => {
     localStorage.setItem('bf_requests', JSON.stringify([
-      { id: 'r1', unitId: 'house-1', unitName: '2-этажные дома №1', name: 'Иван Петров', phone: '+7 928 556 22 33', checkin: '2026-08-01', checkout: '2026-08-05', adults: 2, kids: 1, guests: 3, comment: 'С детьми', status: 'new', createdAt: new Date().toISOString() },
-      { id: 'r2', unitId: 'cottage-2', unitName: 'Коттеджи №2', name: 'Мария Смирнова', phone: '+7 903 111 22 33', checkin: '2026-08-10', checkout: '2026-08-14', adults: 3, kids: 0, guests: 3, comment: '', status: 'confirmed', createdAt: new Date().toISOString() }
+      { id: 'r1', unitId: 'house-1', unitName: '2-этажные дома №1', name: 'Иван Петров', phone: '+7 000 000 00 00', checkin: '2026-08-01', checkout: '2026-08-05', adults: 2, kids: 1, guests: 3, comment: 'С детьми', status: 'new', createdAt: new Date().toISOString() },
+      { id: 'r2', unitId: 'cottage-2', unitName: 'Коттеджи №2', name: 'Мария Смирнова', phone: '+7 000 111 22 33', checkin: '2026-08-10', checkout: '2026-08-14', adults: 3, kids: 0, guests: 3, comment: '', status: 'confirmed', createdAt: new Date().toISOString() }
     ]));
   });
   await m.evaluate(() => { location.hash = '#/manager'; });

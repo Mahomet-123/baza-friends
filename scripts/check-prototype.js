@@ -52,6 +52,56 @@ function check(name, ok, extra) {
   check('Остальные категории свёрнуты', catState.roomOpen === false, 'roomOpen=' + catState.roomOpen);
   check('Активной отмечена нажатая плитка', catState.activeTile === 'house', 'activeTile=' + catState.activeTile);
 
+  // 3б. Дублирующих заголовков категорий больше нет — только одна панель переключения
+  const noDup = await page.evaluate(() => ({
+    heads: document.querySelectorAll('.cat-head').length,
+    bars: document.querySelectorAll('.cat-bar').length,
+    tiles: document.querySelectorAll('.cat-tile').length
+  }));
+  check('Дублирующие заголовки убраны, панель категорий одна', noDup.heads === 0 && noDup.bars === 1 && noDup.tiles === 3, JSON.stringify(noDup));
+
+  // 3в. Панель категорий закрепляется при прокрутке
+  const sticky = await page.evaluate(() => {
+    const bar = document.querySelector('.cat-bar');
+    return { pos: getComputedStyle(bar).position };
+  });
+  check('Панель категорий закрепляется (sticky)', sticky.pos === 'sticky', JSON.stringify(sticky));
+
+  // 3г. На телефоне панель компактная: чипы в один ряд (в покое, не закреплённая)
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await new Promise(r => setTimeout(r, 500));
+  const compact = await page.evaluate(() => {
+    const bar = document.querySelector('.cat-bar');
+    const tiles = [...document.querySelectorAll('.cat-tile')];
+    return {
+      pinned: bar.classList.contains('pinned'),
+      barH: Math.round(bar.getBoundingClientRect().height),
+      tileH: Math.round(tiles[0].getBoundingClientRect().height),
+      tileW: Math.round(tiles[0].getBoundingClientRect().width)
+    };
+  });
+  check('Панель категорий на телефоне компактная (чипы в ряд)',
+    compact.pinned === false && compact.tileH <= 46 && compact.tileW < 200, JSON.stringify(compact));
+
+  // 3д. В закреплённом виде активная категория во всю ширину, остальные — свёрнутые
+  await page.evaluate(() => window.scrollTo(0, 900));
+  await new Promise(r => setTimeout(r, 400));
+  const pinned = await page.evaluate(() => {
+    const bar = document.querySelector('.cat-bar');
+    const active = document.querySelector('.cat-tile.active');
+    const others = [...document.querySelectorAll('.cat-tile:not(.active)')];
+    return {
+      pinned: bar.classList.contains('pinned'),
+      activeW: Math.round(active.getBoundingClientRect().width),
+      otherW: others.length ? Math.round(others[0].getBoundingClientRect().width) : 0,
+      barH: Math.round(bar.getBoundingClientRect().height)
+    };
+  });
+  check('При закреплении активная — во всю ширину, остальные — компактные',
+    pinned.pinned && pinned.activeW > pinned.otherW * 1.8, JSON.stringify(pinned));
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await new Promise(r => setTimeout(r, 300));
+
   // 4. Модалка по клику на карточку
   await page.click('#cat-house [data-details]');
   await new Promise(r => setTimeout(r, 400));
@@ -175,6 +225,31 @@ function check(name, ok, extra) {
   check('Эмодзи на главной не остались', home.emoji === '', home.emoji);
   check('SVG-иконки отрисованы', home.icons > 10, 'иконок: ' + home.icons);
   check('Иконки в плитках и в блоке территории', home.tileIcons === 3 && home.terrIcons === 7, `плитки=${home.tileIcons} территория=${home.terrIcons}`);
+
+  // 10б. Территория: карточки с фотографиями
+  const terr = await page.evaluate(() => {
+    const cards = [...document.querySelectorAll('.terr-card')];
+    return {
+      cards: cards.length,
+      photos: cards.filter(c => {
+        const img = c.querySelector('img');
+        return img && (img.getAttribute('src') || '').startsWith('data:image/svg+xml');
+      }).length,
+      captions: document.querySelectorAll('.terr-card figcaption').length
+    };
+  });
+  check('В блоке территории — 7 карточек с фото', terr.cards === 7 && terr.photos === 7 && terr.captions === 7, JSON.stringify(terr));
+
+  // 10в. Фото территории открывается на весь экран
+  await page.click('.terr-card');
+  await new Promise(r => setTimeout(r, 350));
+  const terrLb = await page.evaluate(() => {
+    const l = document.getElementById('lightbox');
+    return { visible: !!(l && !l.classList.contains('hidden')), cap: l ? l.querySelector('.lb-cap').textContent : '' };
+  });
+  check('Фото территории открывается на весь экран', terrLb.visible && terrLb.cap.length > 0, JSON.stringify(terrLb));
+  await page.click('#lightbox .lb-close');
+  await new Promise(r => setTimeout(r, 250));
 
   // 11. То же самое в админке
   await page.evaluate(() => { location.hash = '#/manager'; });
