@@ -1,0 +1,83 @@
+/* ===== Адаптив (все брейкпойнты в одном месте) ===== */
+
+/* планшет: вкладки уезжают на свою строку и прокручиваются */
+@media (max-width:1000px){
+  .topbar{gap:8px 12px;padding:10px 14px}
+  .tabs{order:3;flex:1 0 100%;margin:0}
+  .topbar-actions{margin-inline-start:auto}
+}
+
+/* телефон */
+@media (max-width:640px){
+  /* аналитика */
+  .an-grid2{grid-template-columns:1fr}
+  .an-kpis{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  .an-note{display:none}
+
+  /* бухгалтерия + календарь (узкие колонки) */
+  .fin-cat-name{min-width:120px;font-size:12px}
+  .cal-bed{width:104px}
+
+  .topbar{gap:8px 10px;padding:9px 12px}
+  .brand{font-size:15px;gap:7px}
+  .brand-icon{width:27px;height:27px;font-size:14px}
+  .role-badge{font-size:10px;padding:2px 7px}
+  .btn-label{display:none}
+  .btn{padding:8px 11px}
+  .tab{padding:7px 12px;font-size:13.5px}
+  .hostel-switch{max-width:150px;font-size:12.5px;padding:7px 8px}
+
+  .view,.stats{padding-left:12px;padding-right:12px}
+  .apt-grid{grid-template-columns:1fr}
+  .field-row{flex-direction:column}
+  .struct-apt-head .btn-danger{margin-inline-start:0}
+
+  /* карточки-цифры: две в ряд, без разъезда */
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .stats .stat{min-width:0;padding:9px 12px}
+  .stats .stat b{font-size:19px}
+  .an-kpis{grid-template-columns:1fr 1fr;gap:8px}
+  .an-kpis .stat{padding:9px 11px}
+  .an-kpis .stat b{font-size:17px}
+  .an-kpis .stat span{font-size:11.5px}
+
+  /* заголовок месяца и кнопки-стрелки */
+  .an-month-nav{gap:8px}
+  .an-month-nav h2{font-size:17px;min-width:0;flex:1}
+
+  /* карта мест */
+  .map-toolbar{gap:8px}
+  .legend{font-size:11.5px;gap:8px 10px}
+  .bed{min-width:60px;padding:7px 8px;font-size:13px}
+  .bed small{max-width:76px}
+
+  /* календарь: колонка коек уже, дни чуть уже — скролл внутри карточки */
+  .cal-bed{width:92px;font-size:11.5px;padding:5px 7px}
+  .cal-row{width:auto; min-width:max-content}
+  .cal-days{flex:none; grid-template-columns:repeat(var(--days),26px)}
+  .cal-apt-group{width:auto; min-width:max-content}
+  .cal-bar{font-size:11px;padding:0 4px}
+  .cal-legend{font-size:11.5px}
+  /* на телефоне карточки-цифры прячем — экран отдаём календарю целиком */
+  body.cal-mode .stats{display:none}
+  body.cal-mode .an-note{display:none}
+
+  /* бухгалтерия */
+  .fin-actions{margin-inline-start:0;width:100%}
+  .fin-actions .btn{flex:1;justify-content:center}
+  .fin-cat-name{min-width:96px;font-size:11.5px}
+  .an-top-row b{min-width:70px;font-size:12px}
+
+  /* команда */
+  .team-add{flex-direction:column}
+  .team-add input,.team-add .btn{width:100%}
+
+  /* модалки — почти на весь экран, поля не мельчат iOS */
+  .modal-backdrop{padding:10px;align-items:flex-end}
+  .modal{max-height:92vh;border-radius:18px}
+  .modal-body{padding:14px}
+  .field input,.field select,.select,.search-box input,.team-add input,.struct-room input{font-size:16px}
+
+  /* переключатель языков */
+  .lang-btn{padding:5px 7px;font-size:11.5px}
+}

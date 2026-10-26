@@ -1,0 +1,12 @@
+/* Территория: сетка фотокарточек с подписями. */
+.terr-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.terr-card {
+  margin: 0; border: 1px solid var(--line); border-radius: var(--radius);
+  overflow: hidden; background: #fff; cursor: pointer;
+  transition: border-color .15s, transform .15s, box-shadow .15s;
+}
+.terr-card:hover { border-color: var(--sea-400); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(4,52,44,.10); }
+.terr-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+.terr-card figcaption { display: flex; align-items: center; gap: 8px; padding: 10px 12px; font-weight: 500; font-size: 14px; }
+.terr-ico { color: var(--sea-600); flex: none; display: flex; }
+.terr-hint { display: none; text-align: center; color: var(--muted); font-size: 13px; margin: 12px 0 0; }

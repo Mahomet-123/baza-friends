@@ -1,0 +1,36 @@
+/* Базовый слой: сбросы, типографика, контейнер, кнопки, общие утилиты.
+   Эти стили общие для всего сайта (и переиспользуются семантикой CRM). */
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.55;
+}
+a { color: var(--sea-600); text-decoration: none; }
+h1, h2, h3 { margin: 0 0 .4em; font-weight: 600; }
+.wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 20px; }
+.muted { color: var(--muted); }
+.hidden { display: none !important; }
+.ic { display: block; }
+
+/* кнопки */
+.btn {
+  display: inline-block; cursor: pointer; border: 0;
+  background: var(--sea-600); color: #fff;
+  padding: 12px 22px; border-radius: 999px; font-size: 15px;
+  font-weight: 600; transition: background .15s ease;
+}
+.btn:hover { background: var(--sea-800); }
+.btn.small { padding: 8px 16px; font-size: 14px; }
+.btn.ghost { background: transparent; color: var(--sea-600); border: 1px solid var(--sea-600); }
+.btn.ghost:hover { background: var(--sea-50); }
+
+/* общая «шапка» секции */
+.sec-head { text-align: center; margin: 48px 0 24px; }
+.sec-head p { color: var(--muted); }
+
+/* призыв к действию в конце страницы */
+.cta { text-align: center; padding: 40px 0 60px; }

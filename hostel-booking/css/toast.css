@@ -1,0 +1,33 @@
+/* ===== Тосты (уведомления) ===== */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  min-width: 240px;
+  max-width: 340px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  box-shadow: 0 6px 18px rgba(43, 38, 32, .12);
+  font-size: 14px;
+  color: var(--ink);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  animation: toastIn .25s var(--ease);
+}
+.toast.success { border-color: var(--free-line); background: var(--free); color: var(--free-ink); }
+.toast.error { border-color: var(--busy-line); background: var(--busy); color: var(--busy-ink); }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: none; }
+}

@@ -1,0 +1,76 @@
+/* Адаптив: планшет, телефон (категории сворачиваются в чипы, территория —
+   горизонтальная лента, таблица заявок — карточками). */
+
+@media (max-width: 860px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .terr-grid { grid-template-columns: repeat(3, 1fr); }
+  .detail-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 30px; }
+}
+
+@media (max-width: 700px) {
+  /* панель категорий на телефоне: три компактных чипа в один ряд — занимает мало места */
+  .cat-bar { padding: 8px 20px; }
+  .cat-tiles { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .cat-tile { padding: 7px 8px; gap: 6px; border-radius: 10px; justify-content: center; }
+  .cat-tile .tile-txt { display: none; }
+  .cat-tile .tile-short { display: block; font-size: 12px; }
+  .cat-tile .tile-price, .cat-tile .tile-chev { display: none; }
+  .cat-tile .tile-ico svg { width: 18px; height: 18px; }
+
+  /* когда панель закреплена: активная категория всегда во всю ширину и всегда последней строкой,
+     остальные — свёрнутые чипы сверху (независимо от того, какая категория выбрана) */
+  .cat-bar.pinned .cat-tiles { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cat-bar.pinned .cat-tile { order: 0; }
+  .cat-bar.pinned .cat-tile.active { order: 1; flex: 1 0 100%; justify-content: flex-start; padding: 8px 12px; gap: 10px; }
+  .cat-bar.pinned .cat-tile.active .tile-txt { display: flex; flex-direction: row; align-items: baseline; gap: 8px; }
+  .cat-bar.pinned .cat-tile.active .tile-short { display: none; }
+  .cat-bar.pinned .cat-tile.active .tile-price { display: block; font-size: 13px; }
+  .cat-bar.pinned .cat-tile.active .tile-chev { display: block; }
+  .cat-bar.pinned .cat-tile.active .tile-ico svg { width: 20px; height: 20px; }
+  .cat-bar.pinned .cat-tile:not(.active) { flex: 0 0 auto; padding: 6px 10px; }
+  .cat-bar.pinned .cat-tile:not(.active) .tile-ico svg { width: 16px; height: 16px; }
+
+  /* территория на телефоне — горизонтальная лента фото, а не длинный список */
+  .terr-grid {
+    display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory;
+    margin: 0 -20px; padding: 2px 20px 8px; scrollbar-width: none;
+  }
+  .terr-grid::-webkit-scrollbar { display: none; }
+  .terr-card { flex: 0 0 150px; scroll-snap-align: start; }
+  .terr-card img { aspect-ratio: 3 / 2; }
+  .terr-card figcaption { font-size: 12px; padding: 8px 10px; gap: 6px; }
+  .terr-hint { display: block; }
+
+  /* таблица заявок на узком экране — карточками, чтобы не сжимать колонки */
+  .req-table thead { display: none; }
+  .req-table, .req-table tbody, .req-table tr, .req-table td { display: block; width: 100%; }
+  .req-table tr {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    margin-bottom: 12px; padding: 10px 14px; background: #fff;
+  }
+  .req-table td {
+    border: none; padding: 6px 0; display: flex; gap: 12px;
+    align-items: baseline; justify-content: space-between;
+  }
+  .req-table td::before {
+    content: attr(data-label); color: var(--muted); font-size: 12px;
+    text-transform: uppercase; letter-spacing: .03em; flex: none;
+  }
+  .req-table td.empty { display: block; text-align: center; }
+}
+
+@media (max-width: 560px) {
+  .nav { display: none; }
+  .header-inner { height: 56px; }
+  .cat-bar { top: 56px; }
+  .grid { grid-template-columns: 1fr; }
+  .modal-box { width: min(560px, 96vw); padding: 20px 16px 22px; max-height: 92vh; }
+  .g-nav { width: 34px; height: 34px; font-size: 20px; }
+  .g-nav.prev { left: 8px; } .g-nav.next { right: 8px; }
+  .g-fs { width: 34px; height: 34px; font-size: 16px; right: 8px; bottom: 8px; }
+  .g-cap { left: 8px; bottom: 8px; font-size: 12px; }
+  .g-thumb { width: 58px; height: 44px; }
+  .lb-nav { width: 44px; height: 44px; font-size: 26px; }
+  .lb-nav.prev { left: 8px; } .lb-nav.next { right: 8px; }
+}

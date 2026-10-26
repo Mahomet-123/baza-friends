@@ -1,0 +1,8 @@
+/* Hero-блок на главной странице. */
+.hero {
+  background: linear-gradient(180deg, var(--sea-50), #fff);
+  padding: 70px 0 56px; text-align: center;
+  border-bottom: 1px solid var(--line);
+}
+.hero h1 { font-size: 40px; color: var(--sea-900); }
+.hero p { font-size: 18px; color: var(--muted); margin-bottom: 26px; }

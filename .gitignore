@@ -4,3 +4,6 @@ node_modules/
 *.log
 .cache/
 *.tmp
+
+# Скриншоты headless-тестов (генерируются при прогоне puppeteer)
+scripts/*.png

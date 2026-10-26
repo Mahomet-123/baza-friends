@@ -1,0 +1,16 @@
+/* Админка сайта (#/manager): панель настроек белого лейбла + таблица заявок. */
+.manager { padding: 30px 20px 60px; }
+.panel {
+  border: 1px solid var(--line); border-radius: var(--radius); padding: 18px;
+  background: var(--bg-soft); margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;
+}
+.panel h3 { width: 100%; margin: 0; }
+.panel label { font-size: 14px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+.panel input { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
+.req-table { width: 100%; border-collapse: collapse; }
+.req-table th, .req-table td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.req-table th { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .03em; }
+.tag { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--sand-50); color: var(--sand-600); font-size: 13px; font-weight: 600; }
+.tag.ok { background: var(--sea-50); color: var(--sea-600); }
+.tag.bad { background: #fdeaea; color: #a32d2d; }
+.empty { text-align: center; color: var(--muted); padding: 30px; }
