@@ -1,0 +1,10 @@
+/* ===== Бухгалтерия / финансы ===== */
+.stat.profit-pos b{color:var(--free-ink)}
+.stat.profit-neg b{color:var(--busy-ink)}
+.fin-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.fin-head h4{margin:0}
+.fin-actions{margin-inline-start:auto;display:flex;gap:8px;flex-wrap:wrap}
+.fin-cat-name{min-width:190px;font-size:13px;font-weight:600}
+.an-top-bar i.bar-exp{background:var(--busy-ink)}
+.sum-in{color:var(--free-ink)}
+.sum-out{color:var(--busy-ink)}
