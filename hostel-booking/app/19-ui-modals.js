@@ -100,7 +100,7 @@ function showPrompt(message, { title = '', defaultValue = '', okText = 'OK', can
   });
 }
 
-function showApartmentPrompt(name, floor) {
+function showApartmentPrompt(name, number, floor) {
   return new Promise(resolve => {
     const actionsHtml = `
       <button class="btn btn-ghost" id="uiModalCancel">${esc(t('cancel'))}</button>
@@ -114,6 +114,10 @@ function showApartmentPrompt(name, floor) {
           <input type="text" class="ui-modal-input" id="uiAptName" value="${esc(name)}" maxlength="20">
         </label>
         <label class="field">
+          <span>${esc(t('struct_apt_number'))}</span>
+          <input type="text" class="ui-modal-input" id="uiAptNumber" value="${esc(String(number == null ? '' : number))}" maxlength="10">
+        </label>
+        <label class="field">
           <span>${esc(t('struct_floor'))}</span>
           <input type="number" class="ui-modal-input" id="uiAptFloor" value="${esc(String(floor))}" min="0" max="99">
         </label>
@@ -123,12 +127,14 @@ function showApartmentPrompt(name, floor) {
     });
 
     const nameInput = document.getElementById('uiAptName');
+    const numberInput = document.getElementById('uiAptNumber');
     const floorInput = document.getElementById('uiAptFloor');
     nameInput.focus();
 
     const save = () => {
       const result = {
         name: nameInput.value.trim(),
+        number: numberInput.value.trim() || String(number == null ? '' : number),
         floor: floorInput.value.trim() === '' ? floor : (Number(floorInput.value) || 0)
       };
       closeUiModal();
@@ -142,7 +148,7 @@ function showApartmentPrompt(name, floor) {
     };
 
     // Enter в любом поле — сохранение
-    [nameInput, floorInput].forEach(inp => {
+    [nameInput, numberInput, floorInput].forEach(inp => {
       inp.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();

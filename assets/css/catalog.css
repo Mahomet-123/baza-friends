@@ -55,3 +55,27 @@
 }
 .rest-teaser h3 { margin: 0 0 6px; color: var(--sand-600); display: flex; align-items: center; justify-content: center; gap: 8px; }
 .rest-teaser p { margin: 0; color: var(--sand-600); }
+
+/* выбор дат в каталоге — помечаем «занято» */
+.date-bar {
+  display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap;
+  margin: 0 0 14px; padding: 12px 14px; background: #fff;
+  border: 1px solid var(--line); border-radius: var(--radius);
+}
+.date-bar label { display: flex; flex-direction: column; font-size: 13px; color: var(--muted); gap: 4px; }
+.date-bar input { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; color: var(--ink); }
+.date-bar .date-hint { margin-left: auto; font-size: 13px; color: var(--muted); align-self: center; }
+
+/* бейдж «занято» на карточке + некликабельное состояние */
+.occ-chip {
+  position: absolute; right: 12px; top: 12px; background: #c0392b; color: #fff;
+  font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; letter-spacing: .02em;
+}
+.card.occupied { opacity: .82; }
+.card.occupied .card-photo img { filter: grayscale(.35); }
+.btn.small.occ { background: #c0392b; border-color: #c0392b; cursor: not-allowed; }
+.card-foot .avail { font-size: 12px; color: var(--sea-700); font-weight: 600; }
+
+/* сообщение об ошибке в форме заявки */
+.form-content .err { margin: 10px 0 0; color: #c0392b; font-size: 14px; font-weight: 600; }
+.form-content .btn[disabled] { opacity: .6; cursor: progress; }

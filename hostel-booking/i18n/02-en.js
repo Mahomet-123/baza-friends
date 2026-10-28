@@ -158,7 +158,7 @@ I18N.en = {
   team_how_2: 'A manager sees the same beds, bookings, calendar and accounting as you — so there are no double check-ins. The Team tab is owner-only.',
 
   struct_intro: 'Here you set up the hostel “geography”: buildings, apartments, rooms with beds and capsule boxes. Every apartment has a WC, kitchen and lounge — shown on the map automatically.',
-  struct_building: 'Building', struct_apt_name: 'Apartment name', struct_floor: 'Floor',
+  struct_building: 'Building', struct_apt_name: 'Apartment name', struct_apt_number: 'Apartment number', struct_floor: 'Floor',
   struct_del_apt: 'Delete apartment', struct_room_kind: 'Room', struct_caps_kind: 'Capsule boxes',
   struct_beds: 'beds:', struct_remove: 'Remove', struct_name_title: 'Name',
   del_apt_confirm_busy: 'Apartment {name} has {n} current bookings — they will be deleted. Delete the apartment?',
@@ -186,6 +186,8 @@ I18N.en = {
   f_all_sources: 'All sources', f_site_only: 'Site only', f_crm_only: 'CRM only',
   site_bookings: 'Site requests', cal_site_bookings: 'Site requests — confirm or reject',
   ren_room_title: 'Rename room', ren_bed_title: 'Rename bed', bed_label: 'Bed name',
+  price_tab: 'Prices', price_mode_title: 'Price mode: click an apartment, room or bed to set its price',
+  price_apt_title: 'Apartment price per night (₽)', price_room_title: 'Room price per night (₽)', price_bed_title: 'Bed price per night (₽)',
   st_new: 'new', st_confirmed: 'confirmed', st_rejected: 'rejected',
   bk_confirm: 'Confirm', bk_reject: 'Reject',
   drag_hint: 'Drag a booking bar onto another bed or date. Drag the right edge to extend or shorten the stay.',

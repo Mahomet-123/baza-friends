@@ -52,26 +52,30 @@ function renderMap(){
           ? `<span class="bed-x" data-del-bed="${bed.id}" title="${t('del_bed_title')}">×</span>`
             + `<span class="bed-ren" data-ren-bed="${bed.id}" title="${t('ren_bed_title', {label: bedLabel(room,bed)})}"><span data-icon="pencil"></span></span>`
           : '';
-        return `<button class="${cls}" data-bed="${bed.id}">${bedCtl}${bedLabel(room,bed)}<small>${sub}</small></button>`;
+        const bedPrice = priceMode ? `<span class="bed-price" data-price-bed="${bed.id}">${fmtMoney(resolvePrice(apt,room,bed))} ₽</span>` : '';
+        return `<button class="${cls}" data-bed="${bed.id}">${bedCtl}${bedPrice}${bedLabel(room,bed)}<small>${sub}</small></button>`;
       }).join('');
       const addBed = `<button class="bed add-bed" data-add-bed="${room.id}">
         <span data-icon="plus"></span><small>${room.type==='capsule'?t('box_word'):t('bed_word')}</small></button>`;
       const rIcon = room.type==='capsule' ? 'box' : 'door';
       const rName = room.type==='capsule' ? esc(roomDisplayName(room)) : `${t('room')} ${esc(room.name)}`;
+      const roomRen = mapEdit ? `<button class="btn-icon btn-xs" data-room-rename-map="${room.id}" title="${t('ren_room_title')}"><span data-icon="pencil"></span></button>` : '';
       const roomDel = mapEdit ? `<button class="btn-icon btn-xs danger" data-del-room-map="${room.id}" title="${t('del_room_title')}"><span data-icon="trash"></span></button>` : '';
+      const roomPrice = priceMode ? `<button class="price-tag" data-price-room="${room.id}" title="${t('price_room_title')}">${fmtMoney(resolvePrice(apt, room))} ₽</button>` : '';
       return `<div class="room-block ${room.type}">
-        <div class="room-title"><span data-icon="${rIcon}"></span>${rName}${roomDel}</div>
+        <div class="room-title"><span data-icon="${rIcon}"></span>${rName}${roomPrice}${roomRen}${roomDel}</div>
         <div class="beds">${bedsHtml}${addBed}</div>
       </div>`;
     }).join('');
     const aptCtl = mapEdit ? `
         <button class="btn-icon btn-xs" data-edit-apt="${apt.id}" title="${t('ren_apt_title')}"><span data-icon="pencil"></span></button>
         <button class="btn-icon btn-xs danger" data-del-apt-map="${apt.id}" title="${t('del_apt_title')}"><span data-icon="trash"></span></button>` : '';
+    const aptPrice = priceMode ? `<button class="price-tag" data-price-apt="${apt.id}" title="${t('price_apt_title')}">${fmtMoney(resolvePrice(apt))} ₽</button>` : '';
     return `<div class="apt-card">
       <div class="apt-head">
         <h3>${t('apt')} ${esc(apt.name)}</h3>
         <span class="apt-floor">${t('floor')} ${esc(apt.floor)}</span>
-        <span class="apt-occ">${t('occupied_of', {busy, total})}</span>${aptCtl}
+        <span class="apt-occ">${t('occupied_of', {busy, total})}</span>${aptPrice}${aptCtl}
       </div>
       <div class="amenities">
         <span class="amenity"><span data-icon="bath"></span>${t('amen_wc')}</span>

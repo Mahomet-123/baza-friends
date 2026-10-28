@@ -24,6 +24,14 @@ function bedLabel(room, bed){
   if (bed.name) return bed.name;                                   // кастомное имя койки (напр. «Бокс 1», «А-1»)
   return room.type==='capsule' ? `${t('box')} ${bed.num}` : `${room.name}-${bed.num}`;
 }
+/* эффективная цена: явная цена койки → комнаты → апартамента → 7000 ₽ по умолчанию */
+function resolvePrice(apt, room, bed){
+  const p = (bed && Number(bed.price) > 0) ? bed.price
+          : (room && Number(room.price) > 0) ? room.price
+          : (apt && Number(apt.price) > 0) ? apt.price
+          : 7000;
+  return Number(p) || 7000;
+}
 function placeLabel(bedId){
   const f = findBed(bedId);
   if (!f) return '— место удалено —';

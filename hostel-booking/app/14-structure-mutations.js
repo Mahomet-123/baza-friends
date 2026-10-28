@@ -10,7 +10,7 @@ function addApartment(){
   const bld = curBuilding === 'all' ? state.buildings[0].id : curBuilding;
   const inBld = state.apartments.filter(a => a.buildingId === bld).length;
   state.apartments.push({ id: state.nextId++, buildingId: bld,
-    name: String(inBld + 1), floor: 1, rooms: [] });
+    name: 'Апартамент ' + (inBld + 1), number: String(inBld + 1), floor: 1, price: 7000, rooms: [] });
   save(); render();
 }
 async function deleteApartment(aptId){
@@ -41,7 +41,7 @@ function addRoom(aptId, type){
     const used = apt.rooms.filter(r=>r.type==='room').map(r=>r.name);
     name = 'ABCEFGHKLMN'.split('').find(ch=>!used.includes(ch)) || 'X';
   }
-  const room = { id: state.nextId++, name, type, beds: [] };
+  const room = { id: state.nextId++, name, type, price: 0, beds: [] };
   const count = 1; // по умолчанию одно место; остальные добавляются вручную
   for (let i=1;i<=count;i++) room.beds.push({ id: state.nextId++, num: i, name: '' });
   apt.rooms.push(room);
@@ -75,7 +75,7 @@ function addBed(roomId){
     const room = apt.rooms.find(r=>r.id===roomId);
     if (!room) continue;
     const num = room.beds.length ? Math.max(...room.beds.map(b=>b.num)) + 1 : 1;
-    room.beds.push({ id: state.nextId++, num, name: '' });
+    room.beds.push({ id: state.nextId++, num, name: '', price: 0 });
     save(); render();
     return;
   }
@@ -102,9 +102,10 @@ async function removeBed(bedId){
 async function renameApartment(aptId){
   const apt = state.apartments.find(a=>a.id===aptId);
   if (!apt) return;
-  const result = await showApartmentPrompt(apt.name, apt.floor);
+  const result = await showApartmentPrompt(apt.name, apt.number, apt.floor);
   if (result === null) return;
   apt.name = result.name.trim() || apt.name;
+  apt.number = result.number.trim() || apt.number;
   apt.floor = result.floor;
   save(); render();
 }
@@ -149,4 +150,63 @@ async function resizeRoom(roomId, newCount){
     save(); render();
     return;
   }
+}
+
+/* — правка цен (режим «$» на карте) — */
+async function renameRoom(roomId){
+  for (const apt of state.apartments) {
+    const room = apt.rooms.find(r=>r.id===roomId);
+    if (!room) continue;
+    const cur = room.type==='capsule'
+      ? (room.name==='Капсулы' || room.name==='Capsules' ? '' : room.name)
+      : room.name;
+    const result = await showPrompt(t('ren_room_title'), {
+      title: t('ren_room_title'),
+      defaultValue: cur,
+      okText: t('save'), cancelText: t('cancel')
+    });
+    if (result === null) return;
+    room.name = result.trim() || room.name;
+    save(); render();
+    return;
+  }
+}
+async function setAptPrice(aptId){
+  const apt = state.apartments.find(a=>a.id===aptId);
+  if (!apt) return;
+  const v = await showPrompt(t('price_apt_title'), {
+    title: t('price_apt_title'),
+    defaultValue: String(apt.price || 7000),
+    okText: t('save'), cancelText: t('cancel')
+  });
+  if (v === null) return;
+  apt.price = Number(String(v).replace(/\D/g,'')) || 0;
+  save(); render();
+}
+async function setRoomPrice(roomId){
+  for (const apt of state.apartments) {
+    const room = apt.rooms.find(r=>r.id===roomId);
+    if (!room) continue;
+    const v = await showPrompt(t('price_room_title'), {
+      title: t('price_room_title'),
+      defaultValue: String(room.price || resolvePrice(apt, room) || 7000),
+      okText: t('save'), cancelText: t('cancel')
+    });
+    if (v === null) return;
+    room.price = Number(String(v).replace(/\D/g,'')) || 0;
+    save(); render();
+    return;
+  }
+}
+async function setBedPrice(bedId){
+  const f = findBed(bedId);
+  if (!f) return;
+  const v = await showPrompt(t('price_bed_title'), {
+    title: t('price_bed_title'),
+    defaultValue: String(f.bed.price || resolvePrice(f.apt, f.room, f.bed) || 7000),
+    okText: t('save'), cancelText: t('cancel')
+  });
+  if (v === null) return;
+  f.bed.price = Number(String(v).replace(/\D/g,'')) || 0;
+  save(); render();
 }

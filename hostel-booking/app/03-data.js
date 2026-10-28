@@ -92,10 +92,36 @@ async function cloudLoad(){
     nextId: s.data.data.nextId || 1,
     bookings: (b.data || []).map(r => rowToBk(r, phones)),
   };
+  normalizeStructure();
   if (ensureBuildings()) persistStructure();   // старые данные: заводим «Здание 1»
   const savedBld = localStorage.getItem('hostel_bld_' + hostel.id);
   curBuilding = (savedBld && savedBld !== 'all' && state.buildings.some(b2 => b2.id === Number(savedBld)))
     ? Number(savedBld) : 'all';
+}
+
+/* старые/недополненные данные: проставляем отсутствующие поля
+   (number, price), чтобы код цен и переименования работал везде.
+   Ничего не удаляет — только заполняет пустые места. */
+function normalizeStructure(){
+  if (!state || !state.apartments) return;
+  for (const apt of state.apartments) {
+    if (apt.number == null || apt.number === '') {
+      // раньше в name хранился только номер — переносим его в number
+      apt.number = (apt.name && /^\d+$/.test(String(apt.name).trim()))
+        ? String(apt.name).trim()
+        : (apt.number != null ? String(apt.number) : '1');
+    }
+    if (apt.name == null || apt.name === '' || /^\d+$/.test(String(apt.name).trim())) {
+      apt.name = 'Апартамент ' + apt.number; // красивое имя, если было только число
+    }
+    if (apt.price == null) apt.price = 7000;
+    for (const room of (apt.rooms || [])) {
+      if (room.price == null) room.price = 0;       // 0 = наследовать цену выше
+      for (const bed of (room.beds || [])) {
+        if (bed.price == null) bed.price = 0;
+      }
+    }
+  }
 }
 
 /* первый запуск профиля: создаём в облаке дефолтную планировку */

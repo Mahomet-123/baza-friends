@@ -3,6 +3,7 @@
 
 /* ---------- Здания ---------- */
 let curBuilding = 'all';   // 'all' | id здания
+let priceMode = false;     // режим правки цен (кнопка «$»)
 
 /* у старых данных зданий нет — заводим одно и складываем в него все квартиры */
 function ensureBuildings(){
@@ -41,6 +42,7 @@ function renderBuildingBar(){
   const chips = [chip('all', t('all_buildings'), curBuilding === 'all')]
     .concat(state.buildings.map(b => chip(b.id, b.name, curBuilding === b.id)));
   const edit = mapEdit ? `
+    <button class="bld-chip ${priceMode ? 'on' : ''}" data-price-mode title="${t('price_mode_title')}"><span data-icon="dollar"></span> ${t('price_tab')}</button>
     <button class="bld-chip add" data-add-bld>${t('add_building')}</button>
     ${curBuilding !== 'all' ? `
       <button class="btn-icon btn-xs" data-ren-bld="${curBuilding}" title="${t('bld_ren_title')}"><span data-icon="pencil"></span></button>

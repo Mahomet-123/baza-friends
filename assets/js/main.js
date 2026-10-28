@@ -54,7 +54,9 @@
     document.addEventListener('click', onClick);
     window.addEventListener('hashchange', BF.route);
     window.addEventListener('scroll', () => BF.updatePin(), { passive: true });
-    BF.route();
+    // подгружаем структуру CRM (категории/объекты + занятость). При ошибке
+    // сайт продолжает работать на демо-данных — поэтому .finally, а не блокировка.
+    BF.loadStructure().finally(() => BF.route());
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

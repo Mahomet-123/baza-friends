@@ -18,6 +18,7 @@ function renderStructure(){
           ${t('struct_beds')} <input type="number" min="0" max="40" value="${room.beds.length}" data-room-beds="${room.id}">
         </label>
         <span class="grow"></span>
+        <button class="btn-icon btn-xs" data-room-rename="${room.id}" title="${t('ren_room_title')}"><span data-icon="pencil"></span></button>
         <button class="btn btn-danger btn-sm" data-del-room="${room.id}"><span data-icon="trash"></span> ${t('struct_remove')}</button>
         <div class="struct-beds">${bedsInput}</div>
       </div>`;
@@ -31,6 +32,8 @@ function renderStructure(){
         ${bldSelect}
         <label class="field"><span>${t('struct_apt_name')}</span>
           <input type="text" value="${esc(apt.name)}" maxlength="20" data-apt-name="${apt.id}"></label>
+        <label class="field"><span>${t('struct_apt_number')}</span>
+          <input type="text" value="${esc(apt.number)}" maxlength="10" data-apt-number="${apt.id}"></label>
         <label class="field"><span>${t('struct_floor')}</span>
           <input type="number" value="${esc(apt.floor)}" min="0" max="99" data-apt-floor="${apt.id}"></label>
         <button class="btn btn-danger" data-del-apt="${apt.id}"><span data-icon="trash"></span> ${t('struct_del_apt')}</button>

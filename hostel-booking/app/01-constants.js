@@ -22,6 +22,7 @@ const ICONS = {
   eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
   'eye-off':'<path d="M10.7 5.1A11 11 0 0 1 12 5c6.5 0 10 7 10 7a18 18 0 0 1-2.4 3.4M6.6 6.6A18 18 0 0 0 2 12s3.5 7 10 7a11 11 0 0 0 4.3-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><line x1="2" y1="2" x2="22" y2="22"/>',
   wallet:'<path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h15a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M16 12h.01"/>',
+  dollar:'<line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
   calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
   copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
   users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
@@ -71,19 +72,20 @@ let state = null;
 
 function defaultData(){
   const d = { structVersion: 2, nextId: 1, apartments: [], bookings: [] };
-  const makeApt = (name, floor) => {
-    const apt = { id: d.nextId++, name, floor, rooms: [] };
+  const DEFAULT_PRICE = 7000; // цена по умолчанию за ночь (₽)
+  const makeApt = (n) => {
+    const apt = { id: d.nextId++, name: 'Апартамент ' + n, number: String(n), floor: 1, price: DEFAULT_PRICE, rooms: [] };
     for (const rn of ['A','B','C','E']) {
-      const room = { id: d.nextId++, name: rn, type: 'room', beds: [] };
-      for (let i = 1; i <= 4; i++) room.beds.push({ id: d.nextId++, num: i });
+      const room = { id: d.nextId++, name: rn, type: 'room', price: 0, beds: [] };
+      for (let i = 1; i <= 4; i++) room.beds.push({ id: d.nextId++, num: i, name: '', price: 0 });
       apt.rooms.push(room);
     }
-    const caps = { id: d.nextId++, name: 'Капсулы', type: 'capsule', beds: [] };
-    for (let i = 1; i <= 4; i++) caps.beds.push({ id: d.nextId++, num: i });
+    const caps = { id: d.nextId++, name: 'Капсулы', type: 'capsule', price: 0, beds: [] };
+    for (let i = 1; i <= 4; i++) caps.beds.push({ id: d.nextId++, num: i, name: '', price: 0 });
     apt.rooms.push(caps);
     d.apartments.push(apt);
   };
-  for (let i = 1; i <= 7; i++) makeApt(String(i), i);
+  for (let i = 1; i <= 7; i++) makeApt(i);
   return d;
 }
 /* — кто я и в каком хостеле — */

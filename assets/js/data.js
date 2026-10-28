@@ -19,6 +19,10 @@ const I18N = {
     f_name: 'Ваше имя', f_phone: 'Телефон', f_checkin: 'Заезд', f_checkout: 'Выезд',
     f_adults: 'Взрослые', f_kids: 'Сколько детей', f_has_kids: 'Есть дети', f_total: 'Всего гостей',
     f_comment: 'Комментарий', send: 'Отправить заявку', sent: 'Заявка отправлена! Менеджер скоро свяжется.',
+    date_hint: 'Выберите даты — покажем, что занято',
+    occupied: 'Занято', free_beds: 'Свободно',
+    occupied_msg: 'К сожалению, на эти даты мест нет. Выберите другие даты или другой объект.',
+    err_send: 'Не удалось отправить. Попробуйте ещё раз.',
     manager_title: 'Заявки', manager_sub: 'Все заявки гостей в одном месте',
     m_unit: 'Объект', m_guest: 'Гость', m_dates: 'Даты', m_status: 'Статус', m_actions: 'Действия',
     m_adults: 'взр.', m_kids: 'дет.',
@@ -47,6 +51,10 @@ const I18N = {
     f_name: 'Your name', f_phone: 'Phone', f_checkin: 'Check-in', f_checkout: 'Check-out',
     f_adults: 'Adults', f_kids: 'How many children', f_has_kids: 'Children coming', f_total: 'Total guests',
     f_comment: 'Comment', send: 'Send request', sent: 'Request sent! A manager will contact you soon.',
+    date_hint: 'Pick dates to see what is booked',
+    occupied: 'Booked', free_beds: 'Available',
+    occupied_msg: 'Sorry, no slots for these dates. Pick other dates or another unit.',
+    err_send: 'Could not send. Please try again.',
     manager_title: 'Requests', manager_sub: 'All guest requests in one place',
     m_unit: 'Unit', m_guest: 'Guest', m_dates: 'Dates', m_status: 'Status', m_actions: 'Actions',
     m_adults: 'adults', m_kids: 'kids',
@@ -152,7 +160,10 @@ function makeScene(kind,accent,code){
   return svgURI(head+defs+body+chip+'</svg>');
 }
 
-const CATEGORIES = [
+/* Категории и юниты по умолчанию (демо). При старте сайт подгружает
+   реальную структуру из CRM (crm-bridge → public-structure) и ПЕРЕЗАПИСЫВАЕТ
+   эти переменные. Если CRM недоступна — работаем на демо-данных. */
+let CATEGORIES = [
   { id: 'room',    name_ru: 'Номера',         name_en: 'Rooms',             short_ru: 'Номера',      short_en: 'Rooms',     count: 7, price: 7000,  icon: 'bed' },
   { id: 'cottage', name_ru: 'Коттеджи',       name_en: 'Cottages',          short_ru: 'Коттеджи',    short_en: 'Cottages',  count: 5, price: 10000, icon: 'home' },
   { id: 'house',   name_ru: '2-этажные дома', name_en: 'Two-storey houses', short_ru: '2-эт. дома',  short_en: '2-floor h.', count: 3, price: 15000, icon: 'building' },
@@ -204,7 +215,7 @@ function buildUnits() {
   });
   return list;
 }
-const UNITS = buildUnits();
+let UNITS = buildUnits();
 
 const TERRITORY = [
   { kind: 'beach',   icon: 'umbrella', name_ru: 'Пляж на Каспии',            name_en: 'Caspian beach' },

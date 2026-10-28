@@ -187,6 +187,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   /* карта: койки + редактирование структуры */
   $('#viewMap').addEventListener('click', e=>{
     if (e.target.closest('#btnMapEdit')) { mapEdit = !mapEdit; renderMap(); return; }
+    if (e.target.closest('[data-price-mode]')) { priceMode = !priceMode; renderMap(); return; }
     const bld = e.target.closest('[data-bld]');
     if (bld) { pickBuilding(bld.dataset.bld); return; }
     if (e.target.closest('[data-add-bld]')) { addBuilding(); return; }
@@ -206,11 +207,26 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (addC) { addRoom(Number(addC.dataset.addCaps), 'capsule'); return; }
     const delR = e.target.closest('[data-del-room-map]');
     if (delR) { deleteRoom(Number(delR.dataset.delRoomMap)); return; }
+    const renR = e.target.closest('[data-room-rename-map]');
+    if (renR) { renameRoom(Number(renR.dataset.roomRenameMap)); return; }
     const edA = e.target.closest('[data-edit-apt]');
     if (edA) { renameApartment(Number(edA.dataset.editApt)); return; }
     const delA = e.target.closest('[data-del-apt-map]');
     if (delA) { deleteApartment(Number(delA.dataset.delAptMap)); return; }
     if (e.target.closest('[data-add-apt]')) { addApartment(); return; }
+    /* режим цен: клик по тегу цены или по койке задаёт цену */
+    if (priceMode) {
+      const pa = e.target.closest('[data-price-apt]');
+      if (pa) { setAptPrice(Number(pa.dataset.priceApt)); return; }
+      const pr = e.target.closest('[data-price-room]');
+      if (pr) { setRoomPrice(Number(pr.dataset.priceRoom)); return; }
+      const pb = e.target.closest('[data-price-bed]');
+      if (pb) { setBedPrice(Number(pb.dataset.priceBed)); return; }
+      if (!e.target.closest('[data-del-bed]') && !e.target.closest('[data-ren-bed]')) {
+        const bed2 = e.target.closest('[data-bed]');
+        if (bed2) { setBedPrice(Number(bed2.dataset.bed)); return; }
+      }
+    }
     const bed = e.target.closest('[data-bed]');
     if (bed) openBedModal(Number(bed.dataset.bed));
   });
@@ -327,6 +343,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (addR) { addRoom(Number(addR.dataset.addRoom), 'room'); return; }
     const addC = e.target.closest('[data-add-caps]');
     if (addC) { addRoom(Number(addC.dataset.addCaps), 'capsule'); return; }
+    const renRoom = e.target.closest('[data-room-rename]');
+    if (renRoom) { renameRoom(Number(renRoom.dataset.roomRename)); return; }
   });
   structure.addEventListener('change', e=>{
     const t = e.target;
@@ -338,6 +356,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (t.dataset.aptName !== undefined) {
       const apt = state.apartments.find(a=>a.id===Number(t.dataset.aptName));
       if (apt) { apt.name = t.value.trim() || apt.name; save(); render(); }
+    } else if (t.dataset.aptNumber !== undefined) {
+      const apt = state.apartments.find(a=>a.id===Number(t.dataset.aptNumber));
+      if (apt) { apt.number = t.value.trim() || apt.number; save(); render(); }
     } else if (t.dataset.aptFloor !== undefined) {
       const apt = state.apartments.find(a=>a.id===Number(t.dataset.aptFloor));
       if (apt) { apt.floor = Number(t.value) || 0; save(); render(); }

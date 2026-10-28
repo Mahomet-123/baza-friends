@@ -10,6 +10,7 @@
     lang: localStorage.getItem('bf_lang') || 'ru',
     settings: Object.assign({}, DEFAULT_SETTINGS, JSON.parse(localStorage.getItem('bf_settings') || '{}')),
     openCat: 'room',
+    dates: { checkin: '', checkout: '' },    // выбранный диапазон в каталоге (для «занято»)
     gIdx: { detail: 0, modal: 0 },          // текущий кадр галереи по контексту
     lb: { list: [], idx: 0 },                // состояние лайтбокса (полный экран)
     modalList: [],
@@ -30,6 +31,6 @@
       : (n === 1 ? 'unit' : 'units');
   };
 
-  /* поиск объекта по id (UNITS — глобал из data.js) */
-  BF.getUnit = function (id) { return UNITS.find(u => u.id === id); };
+  /* поиск объекта по id (UNITS — глобал из data.js, может быть перезаписан CRM) */
+  BF.getUnit = function (id) { return UNITS.find(u => String(u.id) === String(id)); };
 })();
