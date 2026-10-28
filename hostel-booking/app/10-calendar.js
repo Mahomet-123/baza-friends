@@ -32,37 +32,41 @@ function renderCalendar(){
       ? esc(buildingName(apt.buildingId)) + ' · ' : '';
     rows += `<section class="cal-apt-group">
       <div class="cal-apt"><span>${bld}${t('apt')} ${esc(apt.name)} · ${t('floor')} ${esc(apt.floor)}</span></div>`;
-    for (const room of apt.rooms) {
-      for (const bed of room.beds) {
-        /* grid-column задаём ЯВНО: иначе автораскладка перепрыгивает колонки,
-           занятые полосами броней, и «сегодня» уезжает вправо */
-        const cells = Array.from({length: days}, (_, i) => {
-          const day = iso(i + 1);
-          return `<div class="cal-cell ${day === today ? 'today' : ''}" style="grid-column:${i + 1}" data-new="${bed.id}|${day}" title="${t('cal_free_hint', {bed: bedLabel(room, bed), date: fmtDate(day)})}"></div>`;
-        }).join('');
-        /* полосы броней поверх сетки */
-        const bars = state.bookings.filter(b => b.bedId === bed.id && b.checkin < to && b.checkout > from)
-          .map(b => {
-            const s = b.checkin < from ? 1 : new Date(b.checkin).getUTCDate();
-            const e = b.checkout > to ? days + 1 : new Date(b.checkout).getUTCDate();
-            const span = Math.max(1, e - s);
-            const cls = bkStatus(b) === 'past' ? 'past' : (bkStatus(b) === 'future' ? 'future' : 'live');
-            const who = canSeePhone(b) ? (b.phone || '') : t('phone_hidden');
-            return `<div class="cal-bar ${cls}" style="grid-column:${s} / span ${span}"
-              data-bar="${b.id}"
-              title="${esc(b.guest)} · ${fmtDate(b.checkin)} → ${fmtDate(b.checkout)} · ${cls === 'live' ? t('cal_lives') : cls === 'future' ? t('cal_booked') : t('cal_left')} · ${t('entered_by', {who: authorOf(b)})}${who ? ' · ' + esc(who) : ''}"
-              ><span>${esc(b.guest)}</span></div>`;
+      for (const room of apt.rooms) {
+        for (const bed of room.beds) {
+          /* grid-column задаём ЯВНО: иначе автораскладка перепрыгивает колонки,
+             занятые полосами броней, и «сегодня» уезжает вправо */
+          const cells = Array.from({length: days}, (_, i) => {
+            const day = iso(i + 1);
+            return `<div class="cal-cell ${day === today ? 'today' : ''}" style="grid-column:${i + 1}" data-new="${bed.id}|${day}" title="${t('cal_free_hint', {bed: bedLabel(room, bed), date: fmtDate(day)})}"></div>`;
           }).join('');
-        rows += `<div class="cal-row">
-          <div class="cal-bed ${room.type === 'capsule' ? 'capsule' : ''}">
-            ${room.type === 'capsule' ? '' : `<i>${esc(room.name)}</i>`}${bedLabel(room, bed)}
-          </div>
-          <div class="cal-days" style="--days:${days}">${cells}${bars}</div>
-        </div>`;
+          /* полосы броней поверх сетки */
+          const bars = state.bookings.filter(b => b.bedId === bed.id && b.checkin < to && b.checkout > from)
+            .map(b => {
+              const s = b.checkin < from ? 1 : new Date(b.checkin).getUTCDate();
+              const e = b.checkout > to ? days + 1 : new Date(b.checkout).getUTCDate();
+              const span = Math.max(1, e - s);
+              const cls = bkStatus(b) === 'past' ? 'past' : (bkStatus(b) === 'future' ? 'future' : 'live');
+              const siteCls = (b.source || 'crm') === 'site' ? ' site' : '';
+              const who = canSeePhone(b) ? (b.phone || '') : t('phone_hidden');
+              return `<div class="cal-bar ${cls}${siteCls}" style="grid-column:${s} / span ${span}"
+                data-bar="${b.id}"
+                title="${esc(b.guest)} · ${fmtDate(b.checkin)} → ${fmtDate(b.checkout)} · ${cls === 'live' ? t('cal_lives') : cls === 'future' ? t('cal_booked') : t('cal_left')} · ${t('entered_by', {who: authorOf(b)})}${who ? ' · ' + esc(who) : ''}"
+                ><span>${esc(b.guest)}</span><span class="cal-bar__resize" title="${t('drag_hint')}"></span></div>`;
+            }).join('');
+          rows += `<div class="cal-row" data-bed="${bed.id}">
+            <div class="cal-bed ${room.type === 'capsule' ? 'capsule' : ''}">
+              ${room.type === 'capsule' ? '' : `<i>${esc(room.name)}</i>`}${bedLabel(room, bed)}
+            </div>
+            <div class="cal-days" style="--days:${days}">${cells}${bars}</div>
+          </div>`;
+        }
       }
+      rows += `</section>`;
     }
-    rows += `</section>`;
-  }
+
+  /* заявки с сайта — отдельный блок (файл 16-site-bookings.js) */
+  const sitePanel = siteBookingsPanelHtml();
 
   v.innerHTML = `
     <div class="an-month-nav">
@@ -75,10 +79,13 @@ function renderCalendar(){
       <span class="l-live"><i></i>${t('cal_live')}</span>
       <span class="l-fut"><i></i>${t('cal_future')}</span>
       <span class="l-pastb"><i></i>${t('cal_past')}</span>
+      <span class="l-site"><i></i>${t('from_site')}</span>
       <span class="l-free"><i></i>${t('cal_free')}</span>
     </div>
-    <div class="cal-wrap">${head}${rows}</div>`;
+    <div class="cal-wrap">${head}${rows}</div>
+    ${sitePanel}`;
   fitCalendar();
+  initCalendarDrag();
 }
 
 /* календарь тянем до низа экрана: вся прокрутка — внутри него, страница стоит,

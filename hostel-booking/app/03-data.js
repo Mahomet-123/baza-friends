@@ -1,20 +1,39 @@
 /* ===== Хостел · бронирование коек ===== */
 'use strict';
 
-/* определить хостел и роль (локально — без облака и приглашений) */
+/* определить хостел и роль; при первом входе — завести хостел или вступить по приглашению */
 async function resolveHostel(){
   const { data: { user } } = await sb.auth.getUser();
   me = user.id; myEmail = user.email;
   const myName = (user.user_metadata && user.user_metadata.name) || '';
 
-  let { data: mems } = await sb.from('hostel_members').select('*');
+  let { data: mems, error } = await sb.from('hostel_members').select('*');
+  if (error) throw error;
   let mine = (mems || []).filter(m => m.user_id === me);
 
-  // первый вход этого аккаунта — делаем его владельцем локального хостела
   if (!mine.length) {
-    await sb.from('hostel_members').upsert(
-      { user_id: me, hostel_id: 'local', role: 'owner', email: myEmail, name: myName },
-      { onConflict: 'user_id' });
+    // Ищем приглашение строго для email текущего пользователя
+    const { data: inv } = await sb.from('invites')
+      .select('hostel_id')
+      .eq('email', myEmail.toLowerCase());
+    if (inv && inv.length) {
+      // Приглашение есть — добавляем как менеджера
+      const { error: e1 } = await sb.from('hostel_members')
+        .insert({ hostel_id: inv[0].hostel_id, user_id: me, role: 'manager', email: myEmail, name: myName });
+      if (e1) throw e1;
+      // удаляем использованное приглашение
+      await sb.from('invites')
+        .delete()
+        .eq('hostel_id', inv[0].hostel_id)
+        .eq('email', myEmail.toLowerCase());
+    } else {
+      // Приглашения нет — выходим, не создаём владельца
+      alert(t('no_invite_message'));
+      await sb.auth.signOut();
+      location.reload();
+      return;
+    }
+    // Перечитываем участников после вступления
     ({ data: mems } = await sb.from('hostel_members').select('*'));
     mine = (mems || []).filter(m => m.user_id === me);
   }
@@ -25,7 +44,10 @@ async function resolveHostel(){
   members = (mems || []).filter(m => m.hostel_id === hostel.id);
   myHostels = mine;
   allMembers = mems || [];
-  invites = []; // в автономном режиме приглашений нет
+  if (isOwner()) {
+    const { data: inv } = await sb.from('invites').select('*').eq('hostel_id', hostel.id);
+    invites = (inv || []).filter(i => !members.some(m => (m.email || '').toLowerCase() === i.email.toLowerCase()));
+  } else invites = [];
 }
 let myHostels = [], allMembers = [];
 let structureUpdatedAt = null; // для оптимистичной блокировки структуры

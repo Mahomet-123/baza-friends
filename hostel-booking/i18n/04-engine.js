@@ -1,7 +1,7 @@
 'use strict';
 
-const LANGS = ['ru', 'en', 'ar'];
-const LANG_NAMES = { ru: 'РУС', en: 'ENG', ar: 'عربي' };
+const LANGS = ['ru', 'en'];
+const LANG_NAMES = { ru: 'РУС', en: 'ENG' };
 
 /* ---------- движок ---------- */
 let LANG = (() => {
@@ -32,7 +32,7 @@ function setLang(lang, rerender = true){
   LANG = lang;
   try { localStorage.setItem('hostel_lang', lang); } catch(e){}
   document.documentElement.lang = lang;
-  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.documentElement.dir = 'ltr';
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('on', b.dataset.lang === lang));
   applyStaticI18n();
   if (rerender && typeof render === 'function' && typeof state !== 'undefined' && state) {

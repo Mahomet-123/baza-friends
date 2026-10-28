@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#2f7d6d">
+  <title>Хостел — бронирование коек</title>
+
+  <!-- Иконки (вкладка браузера + экран телефона) -->
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/icon-32.png?v=2">
+  <link rel="icon" type="image/png" sizes="192x192" href="../assets/icon-192.png?v=2">
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/icon-180.png?v=2">
+  <link rel="manifest" href="../manifest.webmanifest?v=2">
+  <meta name="apple-mobile-web-app-title" content="Хостел">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../styles.css?v=15">
+<link rel="stylesheet" href="../css/modals.css?v=1">
+</head>
+
+<body>
+
+  <!-- ЭКРАН ВХОДА / РЕГИСТРАЦИИ -->
+  <div id="loginScreen" class="login-screen">
+    <form id="loginForm" class="login-card" autocomplete="off">
+      <div class="lang-switch login-langs" id="loginLangs"></div>
+      <div class="login-logo" data-icon="bed"></div>
+      <h1 id="authTitle">Хостел</h1>
+      <p class="login-sub" id="authSub">Система бронирования коек</p>
+
+      <label class="field">
+        <span id="authUserLabel">Логин или email</span>
+        <input type="text" id="loginUser" required autocomplete="username">
+      </label>
+      <label class="field">
+        <span data-i18n="login_pass">Пароль</span>
+        <span class="pass-wrap">
+          <input type="password" id="loginPass" required autocomplete="current-password" minlength="6">
+          <button type="button" class="pass-eye" data-eye="loginPass" aria-label="Показать пароль"></button>
+        </span>
+      </label>
+      <label class="field" id="authPass2Field" hidden>
+        <span data-i18n="login_pass2">Повторите пароль</span>
+        <span class="pass-wrap">
+          <input type="password" id="loginPass2" autocomplete="new-password" minlength="6">
+          <button type="button" class="pass-eye" data-eye="loginPass2" aria-label="Показать пароль"></button>
+        </span>
+      </label>
+
+      <p id="loginError" class="login-error" hidden></p>
+      <p id="loginOk" class="login-ok" hidden></p>
+      <button type="submit" class="btn btn-primary btn-wide" id="authSubmit">Войти</button>
+
+      <div class="auth-links">
+        <button type="button" class="link-btn" id="authToggle">Создать аккаунт хостела</button>
+        <button type="button" class="link-btn" id="authForgot">Забыли пароль?</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ПРИЛОЖЕНИЕ -->
+  <div id="app" class="app" hidden>
+
+    <header class="topbar">
+      <div class="brand"><span class="brand-icon" data-icon="bed"></span> <span data-i18n="brand">Хостел</span>
+        <span class="role-badge" id="roleBadge" hidden></span>
+      </div>
+      <nav class="tabs" id="tabs">
+        <button class="tab active" data-view="map" data-i18n="tab_map">Карта мест</button>
+        <button class="tab" data-view="calendar" data-i18n="tab_calendar">Календарь</button>
+        <button class="tab" data-view="bookings" data-i18n="tab_bookings">Брони</button>
+        <button class="tab" data-view="finance" data-i18n="tab_finance">Бухгалтерия</button>
+        <button class="tab" data-view="analytics" data-i18n="tab_analytics">Аналитика</button>
+        <button class="tab" data-view="structure" data-i18n="tab_structure">Структура</button>
+        <button class="tab" data-view="team" id="tabTeam" hidden data-i18n="tab_team">Команда</button>
+      </nav>
+      <div class="topbar-actions">
+        <div class="lang-switch" id="appLangs"></div>
+        <select class="select hostel-switch" id="hostelSwitch" hidden data-i18n-title="hostel_switch_title"
+          title="Вы работаете в нескольких хостелах — выберите нужный"></select>
+        <button class="btn btn-ghost" id="btnExport" data-i18n-title="export_title"
+          title="Скачать резервную копию данных"><span data-icon="download"></span><span class="btn-label"
+            data-i18n="export">Экспорт</span></button>
+        <button class="btn btn-ghost" id="btnImport" data-i18n-title="import_title"
+          title="Загрузить данные из файла"><span data-icon="upload"></span><span class="btn-label"
+            data-i18n="import">Импорт</span></button>
+        <input type="file" id="importFile" accept=".json" hidden>
+        <button class="btn btn-ghost" id="btnLogout" data-i18n-title="logout" title="Выйти"><span
+            data-icon="logout"></span><span class="btn-label" data-i18n="logout">Выход</span></button>
+      </div>
+    </header>
+
+    <div class="stats" id="statsBar"></div>
+
+    <!-- ВИД: КАРТА МЕСТ -->
+    <main id="viewMap" class="view"></main>
+
+    <!-- ВИД: БРОНИ -->
+    <main id="viewBookings" class="view" hidden>
+      <div class="toolbar">
+        <div class="search-box">
+          <span data-icon="search"></span>
+          <input type="text" id="searchBookings" data-i18n-ph="search_ph" placeholder="Поиск: гость или телефон…">
+        </div>
+        <select id="filterApt" class="select"></select>
+        <select id="filterStatus" class="select">
+          <option value="active" data-i18n="f_active">Живут сейчас</option>
+          <option value="future" data-i18n="f_future">Заезд позже</option>
+          <option value="past" data-i18n="f_past">Выехали</option>
+          <option value="all" selected data-i18n="f_all">Все брони</option>
+        </select>
+        <button class="btn btn-primary" id="btnNewBooking"><span data-icon="plus"></span> <span
+            data-i18n="new_booking">Новая бронь</span></button>
+      </div>
+      <div class="table-wrap">
+        <table class="bookings-table">
+          <thead>
+            <tr>
+              <th data-i18n="th_guest">Гость</th>
+              <th data-i18n="th_phone">Телефон</th>
+              <th data-i18n="th_place">Место</th>
+              <th data-i18n="th_in">Заезд</th>
+              <th data-i18n="th_out">Выезд</th>
+              <th data-i18n="th_nights">Ночей</th>
+              <th data-i18n="th_sum">Сумма</th>
+              <th data-i18n="th_pay">Оплата</th>
+              <th data-i18n="th_status">Статус</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="bookingsBody"></tbody>
+        </table>
+        <p id="bookingsEmpty" class="empty-note" hidden data-i18n="no_bookings">Броней не найдено</p>
+      </div>
+    </main>
+
+    <!-- ВИД: СТРУКТУРА -->
+    <main id="viewStructure" class="view" hidden>
+      <div class="structure-intro">
+        <p data-i18n="struct_intro">Здесь настраивается «география» хостела: квартиры, комнаты с кроватями и капсульные
+          боксы.
+          В каждой квартире есть туалет, кухня и общая зона — они отмечаются на карте автоматически.</p>
+        <button class="btn btn-primary" id="btnAddApt"><span data-icon="plus"></span> <span data-i18n="add_apt">Добавить
+            квартиру</span></button>
+      </div>
+      <div id="structureList"></div>
+    </main>
+
+    <!-- ВИД: АНАЛИТИКА -->
+    <main id="viewAnalytics" class="view" hidden></main>
+
+    <!-- ВИД: КОМАНДА -->
+    <main id="viewTeam" class="view" hidden></main>
+
+    <!-- ВИД: КАЛЕНДАРЬ (шахматка по койкам) -->
+    <main id="viewCalendar" class="view" hidden></main>
+
+    <!-- ВИД: БУХГАЛТЕРИЯ -->
+    <main id="viewFinance" class="view" hidden></main>
+  </div>
+
+  <!-- Контейнер для всплывающих уведомлений -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Универсальное модальное окно (confirm / prompt) -->
+<div class="modal-backdrop ui-modal" id="uiModal" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="uiModalTitle"></h2>
+      <button class="btn-icon" data-close-ui-modal title="Закрыть"><span data-icon="x"></span></button>
+    </div>
+    <div class="modal-body" id="uiModalBody"></div>
+    <div class="modal-actions ui-modal-actions" id="uiModalActions"></div>
+  </div>
+</div>
+
+  <!-- МОДАЛКА: ОПЕРАЦИЯ (расход / доход) -->
+  <div class="modal-backdrop" id="finModal" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="finModalTitle">Новый расход</h2>
+        <button class="btn-icon" data-close="finModal" title="Закрыть"><span data-icon="x"></span></button>
+      </div>
+      <form class="modal-body booking-form" id="finForm">
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="fin_kind">Тип операции</span>
+            <select id="finKind" class="select">
+              <option value="expense" data-i18n="fin_kind_exp">Расход</option>
+              <option value="income" data-i18n="fin_kind_inc">Доход (кроме броней)</option>
+            </select>
+          </label>
+          <label class="field">
+            <span data-i18n="fin_date">Дата *</span>
+            <input type="date" id="finDate" required>
+          </label>
+        </div>
+        <label class="field">
+          <span data-i18n="fin_cat">Статья *</span>
+          <select id="finCat" class="select" required></select>
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="fin_amount">Сумма (₽) *</span>
+            <input type="number" id="finAmount" min="0" step="0.01" required placeholder="0">
+          </label>
+          <label class="field">
+            <span data-i18n="fin_note_f">Комментарий</span>
+            <input type="text" id="finNote" data-i18n-ph="fin_note_ph" placeholder="Например: за июль, счёт №12">
+          </label>
+        </div>
+        <p class="conflict-error" id="finError" hidden></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" data-close="finModal" data-i18n="cancel">Отмена</button>
+          <button type="submit" class="btn btn-primary" id="finSubmit" data-i18n="save">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- МОДАЛКА: КОЙКА -->
+  <div class="modal-backdrop" id="bedModal" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="bedModalTitle"></h2>
+        <button class="btn-icon" data-close="bedModal" title="Закрыть"><span data-icon="x"></span></button>
+      </div>
+      <div class="modal-body" id="bedModalBody"></div>
+    </div>
+  </div>
+
+  <!-- МОДАЛКА: БРОНЬ -->
+  <div class="modal-backdrop" id="bookingModal" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="bookingModalTitle">Новая бронь</h2>
+        <button class="btn-icon" data-close="bookingModal" title="Закрыть"><span data-icon="x"></span></button>
+      </div>
+      <form class="modal-body booking-form" id="bookingForm">
+        <label class="field">
+          <span data-i18n="bk_place">Место</span>
+          <select id="bkBed" class="select" required></select>
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="bk_guest">Имя гостя *</span>
+            <input type="text" id="bkGuest" required data-i18n-ph="bk_guest_ph" placeholder="Имя Фамилия">
+          </label>
+          <label class="field">
+            <span data-i18n="bk_phone">Телефон</span>
+            <input type="tel" id="bkPhone" placeholder="+7 …">
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="bk_in">Заезд *</span>
+            <input type="date" id="bkIn" required>
+          </label>
+          <label class="field">
+            <span data-i18n="bk_out">Выезд *</span>
+            <input type="date" id="bkOut" required>
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="bk_price">Цена за ночь</span>
+            <input type="number" id="bkPrice" min="0" step="1" placeholder="0">
+          </label>
+          <label class="field field-check">
+            <span data-i18n="bk_pay">Оплата</span>
+            <label class="check"><input type="checkbox" id="bkPaid"> <span data-i18n="bk_paid">Оплачено</span></label>
+          </label>
+        </div>
+        <label class="field">
+          <span data-i18n="bk_note">Комментарий</span>
+          <input type="text" id="bkNote" data-i18n-ph="bk_note_ph" placeholder="Например: заедет после 22:00">
+        </label>
+        <p class="conflict-error" id="bkError" hidden></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" data-close="bookingModal" data-i18n="cancel">Отмена</button>
+          <button type="submit" class="btn btn-primary" id="bkSubmit" data-i18n="save">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Supabase SDK -->
+  <script src="../assets/supabase.js"></script>
+
+  <!-- Локализация: сначала словари, затем движок -->
+  <script src="../i18n/01-ru.js?v=1"></script>
+  <script src="../i18n/02-en.js?v=1"></script>
+  <script src="../i18n/04-engine.js?v=1"></script>
+
+  <!-- Приложение: строго по порядку зависимостей -->
+  <script src="../app/01-constants.js"></script>
+  <script src="../app/02-helpers.js"></script>
+  <script src="../app/03-data.js"></script>
+  <script src="../app/04-buildings.js"></script>
+  <script src="../app/05-stats-map.js"></script>
+  <script src="../app/06-bookings.js"></script>
+  <script src="../app/07-structure.js"></script>
+  <script src="../app/08-analytics.js"></script>
+  <script src="../app/09-finance.js"></script>
+  <script src="../app/10-calendar.js"></script>
+  <script src="../app/11-team.js"></script>
+  <script src="../app/12-modals.js"></script>
+  <script src="../app/13-booking-actions.js"></script>
+  <script src="../app/14-structure-mutations.js"></script>
+  <script src="../app/15-export-import.js"></script>
+  <script src="../app/16-views.js"></script>
+  <!-- <script src="app/17-init.js?v=1"></script> -->
+<script src="../app/18-toast.js?v=1"></script>
+<script src="../app/19-ui-modals.js?v=1"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('loginScreen').hidden = true;
+  document.getElementById('app').hidden = false;
+});
+</script>
+
+<div id="testResults" style="position:fixed; bottom:0; left:0; right:0; background:#fff; padding:10px; border-top:1px solid #ccc; z-index:9999;">
+  <div id="summary" class="summary"></div>
+  <div id="results"></div>
+</div>
+
+<script src="integration-tests.js"></script>
+
+</body>
+
+</html>

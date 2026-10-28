@@ -30,12 +30,14 @@ function renderFinance(){
   const { y, m } = finYM;
   const { from, to } = monthRange(y, m);
 
-  /* доходы от броней: касса (оплачено) и начислено */
+  /* доходы от броней: начислено, получено (касса) и долг гостей */
   let accrued = 0, cash = 0;
   for (const b of state.bookings) {
     const sum = nightsInRange(b, from, to) * (b.price || 0);
     accrued += sum;
-    if (b.paid) cash += sum;
+    /* получено = либо вся сумма (если бронь отмечена «оплачено»), либо предоплата */
+    const received = b.paid ? sum : (Number(b.prepaid) || 0);
+    cash += received;
   }
   const debt = accrued - cash;
 

@@ -20,10 +20,13 @@ function findBed(bedId){
         if (bed.id === bedId) return { apt, room, bed };
   return null;
 }
-function bedLabel(room, bed){ return room.type==='capsule' ? `${t('box')} ${bed.num}` : `${room.name}-${bed.num}`; }
-function placeLabel(bedId, unitName){
+function bedLabel(room, bed){
+  if (bed.name) return bed.name;                                   // кастомное имя койки (напр. «Бокс 1», «А-1»)
+  return room.type==='capsule' ? `${t('box')} ${bed.num}` : `${room.name}-${bed.num}`;
+}
+function placeLabel(bedId){
   const f = findBed(bedId);
-  if (!f) return unitName || '— место удалено —'; // для заявок с сайта bed_id нет — показываем объект
+  if (!f) return '— место удалено —';
   return `${t('apt')} ${f.apt.name} · ${bedLabel(f.room, f.bed)}`;
 }
 function bkStatus(b){
@@ -48,4 +51,29 @@ function allBeds(){
       for (const bed of room.beds)
         out.push({ apt, room, bed });
   return out;
+}
+
+/* ---------- Маска телефона (РФ: +7 (XXX) XXX-XX-XX) ---------- */
+function formatPhone(value){
+  let raw = String(value || '').replace(/\D/g, '')        // только цифры
+    .replace(/^8/, '7')                                   // 8 → 7 (код РФ)
+    .replace(/^7/, '');                                   // убираем ведущий 7, добавим сами
+  raw = raw.slice(0, 10);                                 // максимум 10 цифр номера
+  if (!raw) return '';
+  let out = '+7 (' + raw.slice(0, 3);
+  if (raw.length >= 3) out += ') ' + raw.slice(3, 6);
+  if (raw.length >= 6) out += '-' + raw.slice(6, 8);
+  if (raw.length >= 8) out += '-' + raw.slice(8, 10);
+  return out;
+}
+function bindPhoneMask(input){
+  if (!input) return;
+  input.addEventListener('input', () => {
+    const after = formatPhone(input.value);
+    if (after !== input.value) {
+      const end = after.length;
+      input.value = after;
+      try { input.setSelectionRange(end, end); } catch(e){}
+    }
+  });
 }
