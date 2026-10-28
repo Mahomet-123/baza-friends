@@ -81,7 +81,7 @@ async function deleteBuilding(id){
   if (state.buildings.length < 2) { alert(t('bld_last')); return; }
   const apts = state.apartments.filter(a => a.buildingId === id);
   if (apts.length) {
-    alert(`В здании «${buildingName(id)}» ещё ${apts.length} квартир(ы).\n` +
+    alert(`В здании «${buildingName(id)}» ещё ${apts.length} апартамент(ов).\n` +
           'Сначала перенесите их в другое здание или удалите — во вкладке «Структура».');
     return;
   }

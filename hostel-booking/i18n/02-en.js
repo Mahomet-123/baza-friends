@@ -158,7 +158,7 @@ I18N.en = {
   team_how_2: 'A manager sees the same beds, bookings, calendar and accounting as you — so there are no double check-ins. The Team tab is owner-only.',
 
   struct_intro: 'Here you set up the hostel “geography”: buildings, apartments, rooms with beds and capsule boxes. Every apartment has a WC, kitchen and lounge — shown on the map automatically.',
-  struct_building: 'Building', struct_apt_name: 'Apartment number', struct_floor: 'Floor',
+  struct_building: 'Building', struct_apt_name: 'Apartment name', struct_floor: 'Floor',
   struct_del_apt: 'Delete apartment', struct_room_kind: 'Room', struct_caps_kind: 'Capsule boxes',
   struct_beds: 'beds:', struct_remove: 'Remove', struct_name_title: 'Name',
   del_apt_confirm_busy: 'Apartment {name} has {n} current bookings — they will be deleted. Delete the apartment?',
@@ -168,7 +168,7 @@ I18N.en = {
   room_label: 'room {name}', del_beds_confirm: 'The removed beds have {n} current bookings — they will be deleted. Continue?',
   del_bed_confirm_busy: 'This bed has {n} current bookings — they will be deleted. Remove {label}?',
   del_bed_confirm: 'Remove {label} from apartment {name}?',
-  apt_ren_prompt: 'Apartment number / name:', floor_prompt: 'Floor:',
+  apt_ren_prompt: 'Apartment name:', floor_prompt: 'Floor:',
   del_bookings_fail: 'Could not delete bookings: ', save_struct_fail: 'Could not save layout: ',
   struct_optimistic_conflict: 'The layout was changed by another staff member. Data has been refreshed. Please try your changes again.',
 
