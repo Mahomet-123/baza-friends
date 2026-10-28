@@ -1,0 +1,106 @@
+/* ===== Кастомные модальные окна (confirm / prompt) ===== */
+
+/* Базовые стили модалок (перенесены из styles.css для независимости) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(43, 38, 32, .45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal {
+  background: var(--card);
+  border-radius: 18px;
+  box-shadow: 0 24px 64px rgba(43, 38, 32, .3);
+  width: 100%;
+  max-width: 560px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  animation: modalIn .22s var(--ease);
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(14px) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.modal-head h2 {
+  margin: 0;
+  font-size: 17px;
+  letter-spacing: -.01em;
+}
+
+.modal-body {
+  padding: 18px 20px;
+  overflow-y: auto;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 0 20px 20px;
+}
+
+/* Специфичные для универсального модального окна */
+.ui-modal .modal {
+  max-width: 420px;
+  padding: 0; /* отступы задаются в .modal-head, .modal-body, .modal-actions */
+}
+
+.ui-modal {
+  z-index: 200; /* поверх остальных модалок */
+}
+
+.ui-modal .modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ui-modal-message {
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ink);
+  white-space: pre-line;
+  margin: 0;
+}
+
+.ui-modal-input {
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 12px;
+  outline: none;
+  transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+
+.ui-modal-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(47, 125, 109, .15);
+}
+
+.ui-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 0 20px 20px;
+}

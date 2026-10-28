@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тесты — Хостел · бронирование коек</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { padding: 20px; font-family: sans-serif; }
+  .test-result { margin-bottom: 6px; padding: 8px 12px; border-radius: 6px; }
+  .pass { background: #e8f4ef; color: #2f7d6d; border: 1px solid #bfe0d5; }
+  .fail { background: #fdeaea; color: #b9403f; border: 1px solid #f2c5c4; }
+  .summary { font-weight: bold; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+  <h1>Модульные тесты</h1>
+  <div id="summary" class="summary"></div>
+  <div id="results"></div>
+
+  <!-- Подключаем i18n -->
+  <script src="../i18n/01-ru.js"></script>
+  <script src="../i18n/02-en.js"></script>
+  <script src="../i18n/04-engine.js"></script>
+
+  <!-- Подключаем supabase SDK (без инициализации) -->
+  <script src="../assets/supabase.js"></script>
+
+  <!-- Подключаем модули приложения, кроме инициализации -->
+  <script src="../app/01-constants.js"></script>
+  <script src="../app/02-helpers.js"></script>
+  <script src="../app/03-data.js"></script>
+  <script src="../app/04-buildings.js"></script>
+  <script src="../app/05-stats-map.js"></script>
+  <script src="../app/06-bookings.js"></script>
+  <script src="../app/07-structure.js"></script>
+  <script src="../app/08-analytics.js"></script>
+  <script src="../app/09-finance.js"></script>
+  <script src="../app/10-calendar.js"></script>
+  <script src="../app/11-team.js"></script>
+  <script src="../app/12-modals.js"></script>
+  <script src="../app/13-booking-actions.js"></script>
+  <script src="../app/14-structure-mutations.js"></script>
+  <script src="../app/15-export-import.js"></script>
+  <script src="../app/16-views.js"></script>
+
+  <!-- Подключаем тесты -->
+  <script src="tests.js"></script>
+</body>
+</html>

@@ -5,37 +5,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#0F6E56">
+  <meta name="theme-color" content="#2f7d6d">
   <title>Хостел — бронирование коек</title>
 
   <!-- Иконки (вкладка браузера + экран телефона) -->
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png?v=2">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png?v=2">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png?v=2">
+  <link rel="manifest" href="manifest.webmanifest?v=2">
   <meta name="apple-mobile-web-app-title" content="Хостел">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
 
-  <!-- Общие токены и примитивы (сайт + CRM используют одни и те же) -->
-  <link rel="stylesheet" href="../assets/css/tokens.css?v=1">
-  <link rel="stylesheet" href="../assets/css/base.css?v=1">
-  <!-- CRM: CSS разбит по ответственности -->
-  <link rel="stylesheet" href="css/tokens-crm.css?v=1">
-  <link rel="stylesheet" href="css/login.css?v=1">
-  <link rel="stylesheet" href="css/topbar.css?v=1">
-  <link rel="stylesheet" href="css/stats.css?v=1">
-  <link rel="stylesheet" href="css/map.css?v=1">
-  <link rel="stylesheet" href="css/table.css?v=1">
-  <link rel="stylesheet" href="css/structure.css?v=1">
-  <link rel="stylesheet" href="css/analytics.css?v=1">
-  <link rel="stylesheet" href="css/calendar.css?v=1">
-  <link rel="stylesheet" href="css/finance.css?v=1">
-  <link rel="stylesheet" href="css/team.css?v=1">
-  <link rel="stylesheet" href="css/building.css?v=1">
-  <link rel="stylesheet" href="css/toast.css?v=1">
-  <link rel="stylesheet" href="css/modal.css?v=1">
-  <link rel="stylesheet" href="css/pass.css?v=1">
-  <link rel="stylesheet" href="css/responsive.css?v=1">
+  <link rel="stylesheet" href="styles.css?v=15">
+<link rel="stylesheet" href="css/modals.css?v=1">
 </head>
 
 <body>
@@ -47,7 +30,6 @@
       <div class="login-logo" data-icon="bed"></div>
       <h1 id="authTitle">Хостел</h1>
       <p class="login-sub" id="authSub">Система бронирования коек</p>
-      <p class="login-demo">Демо: подойдёт любой email и пароль. Данные хранятся локально в браузере — без сервера.</p>
 
       <label class="field">
         <span id="authUserLabel">Логин или email</span>
@@ -87,8 +69,7 @@
   <div id="app" class="app" hidden>
 
     <header class="topbar">
-      <div class="brand"><span class="brand-icon" data-icon="bed"></span> <span data-i18n="brand">Хостел ·
-          Койко-места</span>
+      <div class="brand"><span class="brand-icon" data-icon="bed"></span> <span data-i18n="brand">Хостел</span>
         <span class="role-badge" id="roleBadge" hidden></span>
       </div>
       <nav class="tabs" id="tabs">
@@ -135,6 +116,11 @@
           <option value="past" data-i18n="f_past">Выехали</option>
           <option value="all" selected data-i18n="f_all">Все брони</option>
         </select>
+        <select id="filterSource" class="select">
+          <option value="all" selected data-i18n="f_all_sources">Все источники</option>
+          <option value="site" data-i18n="f_site_only">Только с сайта</option>
+          <option value="crm" data-i18n="f_crm_only">Только CRM</option>
+        </select>
         <button class="btn btn-primary" id="btnNewBooking"><span data-icon="plus"></span> <span
             data-i18n="new_booking">Новая бронь</span></button>
       </div>
@@ -149,6 +135,8 @@
               <th data-i18n="th_out">Выезд</th>
               <th data-i18n="th_nights">Ночей</th>
               <th data-i18n="th_sum">Сумма</th>
+              <th data-i18n="bk_prepaid">Предоплата</th>
+              <th data-i18n="bk_total">Итого</th>
               <th data-i18n="th_pay">Оплата</th>
               <th data-i18n="th_status">Статус</th>
               <th></th>
@@ -292,6 +280,16 @@
             <span data-i18n="bk_price">Цена за ночь</span>
             <input type="number" id="bkPrice" min="0" step="1" placeholder="0">
           </label>
+          <label class="field">
+            <span data-i18n="bk_prepaid">Предоплата</span>
+            <input type="number" id="bkPrepaid" min="0" step="1" placeholder="0">
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="bk_total">Итого к оплате</span>
+            <input type="text" id="bkTotal" readonly placeholder="—">
+          </label>
           <label class="field field-check">
             <span data-i18n="bk_pay">Оплата</span>
             <label class="check"><input type="checkbox" id="bkPaid"> <span data-i18n="bk_paid">Оплачено</span></label>
@@ -310,8 +308,8 @@
     </div>
   </div>
 
-  <!-- Локальный бэкенд (localStorage, без сервера) -->
-  <script src="app/00-backend.js?v=1"></script>
+  <!-- Supabase SDK -->
+  <script src="assets/supabase.js"></script>
 
   <!-- Локализация: сначала словари, затем движок -->
   <script src="i18n/01-ru.js?v=1"></script>
@@ -338,6 +336,8 @@
   <script src="app/17-init.js?v=1"></script>
 <script src="app/18-toast.js?v=1"></script>
 <script src="app/19-ui-modals.js?v=1"></script>
+<script src="app/20-calendar-drag.js?v=1"></script>
+<script src="app/21-site-bookings.js?v=1"></script>
 </body>
 
 </html>

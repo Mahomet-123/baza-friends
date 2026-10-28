@@ -1,81 +1,69 @@
-/* Мост между сайтом и CRM. Пишет заявку в тот же localStorage['hostel_crm_v1'],
-   который читает CRM (hostel-booking/app/00-backend.js). Так заявка, оставленная
-   на сайте, сразу попадает в CRM-панель менеджера — без сервера и без сети.
-   Форма записи и ключ хранилища совпадают с CRM, поэтому система работает как единая.
+/* Мост между сайтом и CRM.
+   Заявка, оставленная на сайте, уходит в релизный CRM через Edge Function
+   create-booking (секрет передаётся в заголовке x-site-key). Админка сайта
+   (#/manager) читает и меняет статус заявок через Edge Function
+   site-bookings (тот же секрет). Никакого localStorage — всё хранится в
+   Supabase, как и в самой CRM, поэтому заявка сразу видна менеджеру в
+   календаре и в панели «Заявки с сайта».
 
-   Важно: CRM читает bookings, отфильтрованные по owner === hostel.id, а для локального
-   хостела hostel.id === 'local'. Поэтому сайт помечает заявку owner:'local' и source:'site'. */
+   Настройки заполняются при деплое (см. hostel-booking/DEPLOY.md):
+   - SUPABASE_URL — адрес вашего проекта Supabase;
+   - SITE_KEY     — тот же секрет, что задан в секретах Edge Function
+                   (SITE_BOOKING_KEY). */
 (function () {
   'use strict';
   const BF = window.BF = window.BF || {};
-  const LS_KEY = 'hostel_crm_v1';
-  const OWNER = 'local'; // CRM по умолчанию работает с локальным хостелом 'local'
 
-  /* ---------- низкоуровневая работа с БД (та же форма, что в 00-backend.js CRM) ---------- */
-  function readDB() {
-    try { return JSON.parse(localStorage.getItem(LS_KEY)); } catch (e) { return null; }
-  }
-  function writeDB(db) {
-    try { localStorage.setItem(LS_KEY, JSON.stringify(db)); } catch (e) { /* квота переполнена — игнорируем */ }
-  }
-  function ensureDB() {
-    let d = readDB();
-    if (!d) {
-      d = {
-        _seq: 0, accounts: [], session: null,
-        hostel_members: [], invites: [],
-        structure: null, bookings: [], booking_phones: [], finance: [], hostel_settings: null
-      };
-      writeDB(d);
+  // ⚠️ ЗАМЕНИТЬ ПРИ ДЕПЛОЕ на реальные значения своего проекта:
+  const SUPABASE_URL = 'https://juahnruwcfbvrrlruojv.supabase.co';
+  const SITE_KEY = 'ЗАМЕНИ_НА_СВОЙ_СЕКРЕТ'; // должен совпадать с SITE_BOOKING_KEY Edge Function
+
+  const FN = SUPABASE_URL + '/functions/v1';
+
+  /* универсальный вызов Edge Function с секретом сайта */
+  async function call(path, body) {
+    const opts = {
+      method: body ? 'POST' : 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-site-key': SITE_KEY,
+      },
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(FN + path, opts);
+    if (!res.ok) {
+      let msg = 'http_' + res.status;
+      try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (e) {}
+      throw new Error(msg);
     }
-    d.bookings = d.bookings || [];
-    d.booking_phones = d.booking_phones || [];
-    d._seq = d._seq || 0;
-    return d;
+    if (res.status === 204) return null;
+    try { return await res.json(); } catch (e) { return null; }
   }
-  function nextId(d) { d._seq = (d._seq || 0) + 1; return d._seq; }
 
-  /* ---------- отправить заявку с сайта → пишем в общий store CRM ---------- */
-  BF.submitBooking = function (p) {
-    const d = ensureDB();
-    const id = nextId(d);
-    const now = new Date().toISOString();
-    const row = {
-      id: id,
-      bed_id: null,                      // сайт бронирует «объект», а не койку
+  /* отправить заявку с сайта → Edge Function create-booking */
+  BF.submitBooking = async function (p) {
+    const r = await call('/create-booking', {
       guest: p.name || '',
-      owner: OWNER,                      // CRM читает bookings where owner='local'
-      unit_name: p.unitName || '',       // название объекта (для CRM-таблицы)
-      source: 'site',                    // помечаем, что заявка пришла с сайта
+      unitName: p.unitName || '',
+      phone: p.phone || '',
       checkin: p.checkin || '',
       checkout: p.checkout || '',
       price: Number(p.price) || 0,
-      paid: false,
-      note: p.comment || '',
-      status: 'new',                     // новая заявка, ждёт подтверждения менеджером
-      adults: p.adults || 0,
-      kids: p.kids || 0,
-      guests: p.guests || 0,
-      created_at: now,
-      updated_at: now,
-      created_by: null
-    };
-    d.bookings.push(row);
-    // телефон клиента — отдельная таблица (CRM хранит телефоны так же)
-    if (p.phone) d.booking_phones.push({ booking_id: id, phone: p.phone });
-    writeDB(d);
-    return id;
+      comment: p.comment || '',
+      adults: Number(p.adults) || 0,
+      kids: Number(p.kids) || 0,
+    });
+    return r && r.id ? r.id : null;
   };
 
-  /* ---------- список заявок для админки сайта (#/manager) ---------- */
-  BF.listBookings = function () {
-    const d = ensureDB();
-    const phones = {};
-    (d.booking_phones || []).forEach(r => { phones[r.booking_id] = r.phone; });
-    return (d.bookings || []).map(r => ({
+  /* список заявок для админки сайта (#/manager) */
+  BF.listBookings = async function () {
+    const data = await call('/site-bookings');
+    const rows = (data && data.bookings) || [];
+    return rows.map(r => ({
       id: r.id,
       guest: r.guest || '',
-      phone: phones[r.id] || '',
+      phone: r.phone || '',
       checkin: r.checkin || '',
       checkout: r.checkout || '',
       adults: r.adults != null ? r.adults : r.guests,
@@ -83,14 +71,12 @@
       guests: r.guests || 0,
       status: r.status || 'new',
       source: r.source || 'crm',
-      unit_name: r.unit_name || ''
+      unit_name: r.unit_name || '',
     }));
   };
 
-  /* ---------- сменить статус заявки (подтвердить/отклонить) в общем store ---------- */
-  BF.setBookingStatus = function (id, status) {
-    const d = ensureDB();
-    const r = d.bookings.find(x => x.id === id);
-    if (r) { r.status = status; r.updated_at = new Date().toISOString(); writeDB(d); }
+  /* сменить статус заявки (подтвердить/отклонить) */
+  BF.setBookingStatus = async function (id, status) {
+    await call('/site-bookings', { id, status });
   };
 })();

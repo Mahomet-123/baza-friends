@@ -5,8 +5,8 @@
   const BF = window.BF = window.BF || {};
   const S = BF.state;
 
-  BF.renderManager = function () {
-    const reqs = BF.listBookings();
+  BF.renderManager = async function () {
+    const reqs = await BF.listBookings();
     const rows = reqs.length ? reqs.map(r => {
       const st = r.status === 'confirmed' ? `<span class="tag ok">${BF.t('confirmed')}</span>`
         : r.status === 'rejected' ? `<span class="tag bad">${BF.t('rejected')}</span>`
@@ -56,8 +56,8 @@
   };
 
   /* подтвердить/отклонить заявку — меняем статус в общем store и перерисовываем */
-  BF.setStatus = function (id, status) {
-    BF.setBookingStatus(id, status);
-    BF.renderManager();
+  BF.setStatus = async function (id, status) {
+    await BF.setBookingStatus(id, status);
+    await BF.renderManager();
   };
 })();

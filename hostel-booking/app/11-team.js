@@ -75,18 +75,20 @@ async function setPrivatePhones(on){
 async function addManager(email){
   const msg = $('#teamMsg');
   const clean = email.trim().toLowerCase();
-  if (!clean.includes('@')) {
-    msg.textContent = t('team_email_bad');
-    msg.className = 'team-msg err'; msg.hidden = false;
-    return;
-  }
-  saving++; // блокируем автообновление во время добавления участника
+  saving++; // блокируем автообновление во время добавления приглашения
   try {
-    await sb.from('hostel_members').upsert(
-      { user_id: 'u_' + clean, hostel_id: hostel.id, role: 'manager', email: clean, name: '' },
-      { onConflict: 'user_id' });
-    if (!members.some(m => m.user_id === 'u_' + clean))
-      members.push({ user_id: 'u_' + clean, hostel_id: hostel.id, role: 'manager', email: clean, name: '' });
+    const { error } = await sb.from('invites')
+      .upsert(
+        { hostel_id: hostel.id, email: clean, created_at: new Date().toISOString() },
+        { onConflict: 'hostel_id,email' }
+      );
+    if (error) {
+      msg.textContent = error.code === '23505'
+        ? t('team_invited_already') : t('team_invite_fail') + error.message;
+      msg.className = 'team-msg err'; msg.hidden = false;
+      return;
+    }
+    invites.push({ hostel_id: hostel.id, email: clean });
     renderTeam();
     const m2 = $('#teamMsg');
     m2.textContent = t('team_invited_ok', {email: clean});

@@ -75,11 +75,27 @@ function openBookingModal(bedId, booking){
   $('#bkIn').value  = booking?.checkin  || today;
   $('#bkOut').value = booking?.checkout || tomorrow;
   $('#bkPrice').value = booking?.price ?? '';
+  $('#bkPrepaid').value = booking?.prepaid ?? '';
   $('#bkPaid').checked = !!booking?.paid;
   $('#bkNote').value = booking?.note || '';
   $('#bkError').hidden = true;
+  recalcBookingTotal();
   openModal('bookingModal');
   $('#bkGuest').focus();
+}
+
+/* автопересчёт «Итого» = цена за ночь × количество ночей */
+function recalcBookingTotal(){
+  const price = Number($('#bkPrice').value) || 0;
+  const inD = $('#bkIn').value, outD = $('#bkOut').value;
+  let n = 0;
+  if (inD && outD) {
+    const diff = (new Date(outD) - new Date(inD)) / 86400000;
+    n = Math.max(0, Math.round(diff));
+  }
+  const total = price * n;
+  $('#bkTotal').value = total ? fmtSAR(total) : '—';
+  return total;
 }
 async function saveBookingFromForm(e){
   e.preventDefault();
@@ -103,6 +119,7 @@ async function saveBookingFromForm(e){
     phone: $('#bkPhone').value.trim(),
     price: Number($('#bkPrice').value) || 0,
     paid: $('#bkPaid').checked,
+    prepaid: Number($('#bkPrepaid').value) || 0,
     note: $('#bkNote').value.trim(),
   };
   const btn = $('#bkSubmit');

@@ -9,6 +9,8 @@ function renderStructure(){
       const kind = room.type==='capsule' ? t('struct_caps_kind') : t('struct_room_kind');
       const nameInput = `<input type="text" value="${esc(room.name)}" maxlength="20"
         data-room-name="${room.id}" title="${t('struct_name_title')}">`;
+      const bedsInput = room.beds.map(b=>`<label class="bed-chip">${t('bed_word')} ${b.num}`
+        + `<input type="text" value="${esc(b.name||'')}" maxlength="20" placeholder="${esc(bedLabel(room,b))}" data-bed-name="${b.id}" title="${t('ren_bed_title',{label:bedLabel(room,b)})}"></label>`).join('');
       return `<div class="struct-room ${room.type}">
         <span class="room-kind">${kind}</span>
         ${nameInput}
@@ -17,6 +19,7 @@ function renderStructure(){
         </label>
         <span class="grow"></span>
         <button class="btn btn-danger btn-sm" data-del-room="${room.id}"><span data-icon="trash"></span> ${t('struct_remove')}</button>
+        <div class="struct-beds">${bedsInput}</div>
       </div>`;
     }).join('');
     const bldSelect = `<label class="field"><span>${t('struct_building')}</span>

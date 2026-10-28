@@ -37,7 +37,13 @@ function hydrateIcons(root){
   });
 }
 
-/* ---------- Доступ (локальный, без сервера) ---------- */
+/* ---------- Доступ (Supabase Auth) ---------- */
+const SUPABASE_URL = 'https://juahnruwcfbvrrlruojv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_xBMrQ8eigUTt-ByLx5z6eA_rsmTysSb'; // публичный ключ: без входа не даёт ни читать, ни писать (RLS)
+const LOGINS = { // старые короткие логины → их email в Supabase (новые входят по email)
+  hostel: 'fransdelaser+hostel@gmail.com',
+  xilon:  'fransdelaser+xilon@gmail.com',
+};
 let authMode = 'login'; // 'login' | 'signup'
 
 function setAuthMode(mode){
@@ -103,14 +109,20 @@ const authorOf = b => {                              // «вы» / «владе�
 function rowToBk(r, phones){
   return { id: r.id, bedId: r.bed_id, guest: r.guest,
     phone: phones[r.id] || '',        // телефон приходит только для СВОИХ броней (RLS)
-    unit_name: r.unit_name || '',     // название объекта (для заявок с сайта)
-    source: r.source || '',           // 'site' — заявка пришла с сайта, '' — бронь из CRM
-    status: r.status || 'new',        // статус заявки: new/confirmed/rejected
     checkin: r.checkin, checkout: r.checkout, price: Number(r.price) || 0,
     paid: r.paid, note: r.note, createdAt: r.created_at, createdBy: r.created_by,
-    updatedAt: r.updated_at };
+    updatedAt: r.updated_at,
+    source: r.source || 'crm',        // 'site' — заявка пришла с сайта, 'crm' — внесена в CRM
+    unitName: r.unit_name || '',      // название объекта как на сайте (для заявок с сайта)
+    status: r.status || 'confirmed',  // new / confirmed / rejected
+    prepaid: Number(r.prepaid) || 0,  // предоплата (сколько уже получено)
+    adults: Number(r.adults) || 0,    // взрослые (заявка с сайта)
+    kids: Number(r.kids) || 0 };      // дети (заявка с сайта)
 }
 function bkToRow(b){ // телефон не тут — он в booking_phones
   return { bed_id: b.bedId, guest: b.guest, owner: hostel.id,
-    checkin: b.checkin, checkout: b.checkout, price: b.price, paid: b.paid, note: b.note };
+    checkin: b.checkin, checkout: b.checkout, price: b.price, paid: b.paid, note: b.note,
+    source: b.source || 'crm', unit_name: b.unitName || '',
+    status: b.status || 'confirmed', prepaid: Number(b.prepaid) || 0,
+    adults: Number(b.adults) || 0, kids: Number(b.kids) || 0 };
 }

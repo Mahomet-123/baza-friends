@@ -48,8 +48,11 @@ function renderMap(){
         if (st.code==='busy') sub = esc(st.booking.guest);
         if (st.code==='resv') sub = t('from_date', {date: fmtDate(st.booking.checkin)});
         const cls = ['bed', room.type==='capsule'?'capsule':'', st.code!=='free'?st.code:''].join(' ').trim();
-        const delBadge = mapEdit ? `<span class="bed-x" data-del-bed="${bed.id}" title="${t('del_bed_title')}">×</span>` : '';
-        return `<button class="${cls}" data-bed="${bed.id}">${delBadge}${bedLabel(room,bed)}<small>${sub}</small></button>`;
+        const bedCtl = mapEdit
+          ? `<span class="bed-x" data-del-bed="${bed.id}" title="${t('del_bed_title')}">×</span>`
+            + `<span class="bed-ren" data-ren-bed="${bed.id}" title="${t('ren_bed_title', {label: bedLabel(room,bed)})}"><span data-icon="pencil"></span></span>`
+          : '';
+        return `<button class="${cls}" data-bed="${bed.id}">${bedCtl}${bedLabel(room,bed)}<small>${sub}</small></button>`;
       }).join('');
       const addBed = `<button class="bed add-bed" data-add-bed="${room.id}">
         <span data-icon="plus"></span><small>${room.type==='capsule'?t('box_word'):t('bed_word')}</small></button>`;

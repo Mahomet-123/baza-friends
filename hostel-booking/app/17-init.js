@@ -54,13 +54,19 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if (!VIEWS.includes(saved)) { try { saved = localStorage.getItem(VIEW_KEY); } catch(e){ saved = null; } }
   if (VIEWS.includes(saved)) switchView(saved);
 
-  /* вход / регистрация — локально, без сервера */
-  sb = window.supabase.createClient();
+  /* вход / регистрация через Supabase Auth */
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const form = $('#loginForm');
   const errEl = $('#loginError'), okEl = $('#loginOk');
   const showErr = msg => { errEl.textContent = msg; errEl.hidden = false; okEl.hidden = true; };
   const showOk  = msg => { okEl.textContent = msg; okEl.hidden = false; errEl.hidden = true; };
   const clearMsg = () => { errEl.hidden = true; okEl.hidden = true; };
+
+  /* логин → email: старые логины (hostel/xilon) продолжают работать, новые входят по email */
+  const resolveEmail = v => {
+    const s = v.trim();
+    return LOGINS[s.toLowerCase()] || (s.includes('@') ? s : null);
+  };
 
   setAuthMode('login');
   $('#authToggle').addEventListener('click', ()=>{
@@ -68,10 +74,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
     clearMsg();
   });
 
-  /* сброс пароля — локально просто сообщение (почты нет) */
-  $('#authForgot').addEventListener('click', ()=>{
-    const email = $('#loginUser').value.trim();
-    if (!email.includes('@')) { showErr(t('forgot_hint')); return; }
+  /* сброс пароля письмом */
+  $('#authForgot').addEventListener('click', async ()=>{
+    const email = resolveEmail($('#loginUser').value);
+    if (!email || !email.includes('@')) {
+      showErr(t('forgot_hint'));
+      return;
+    }
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin });
+    if (error) { showErr(t('forgot_fail') + error.message); return; }
     showOk(t('forgot_sent', {email}));
   });
 
@@ -86,22 +97,67 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if (!email.includes('@')) { showErr(t('err_email_needed')); return; }
       if (pass.length < 6) { showErr(t('err_pass_short')); return; }
       if (pass !== $('#loginPass2').value) { showErr(t('err_pass_mismatch')); return; }
+
+      // Проверяем приглашение до регистрации
+      const { data: invited, error: invErr } = await sb.rpc('has_invite', { p_email: email.toLowerCase() });
+      if (invErr || !invited) {
+        showErr(t('signup_invite_only'));
+        return;
+      }
+
       btn.disabled = true; btn.textContent = t('signup_btn_busy');
       const name = $('#signupName').value.trim();
-      const { error } = await sb.auth.signUp({ email, password: pass, options: { data: { name } } });
+      const { data, error } = await sb.auth.signUp({
+        email,
+        password: pass,
+        options: { data: { name } }
+      });
       btn.disabled = false; btn.textContent = t('signup_btn');
-      if (error) { showErr(t('err_signup') + error.message); return; }
-      initApp();
+      if (error) {
+        showErr(error.message.includes('already registered')
+          ? t('err_email_taken')
+          : t('err_signup') + error.message);
+        return;
+      }
+      if (!data.session) { // если в проекте включат подтверждение почты
+        showOk(t('ok_signup_confirm'));
+        setAuthMode('login');
+        return;
+      }
+      initApp(); // попадёт в хостел по приглашению (resolveHostel)
       return;
     }
 
-    const email = $('#loginUser').value.trim();
+    const email = resolveEmail($('#loginUser').value);
     if (!email) { showErr(t('err_bad_creds')); return; }
     btn.disabled = true; btn.textContent = t('login_btn_busy');
     const { error } = await sb.auth.signInWithPassword({ email, password: pass });
     btn.disabled = false; btn.textContent = t('login_btn');
-    if (error) { showErr(t('err_bad_creds')); $('#loginPass').value = ''; $('#loginPass').focus(); return; }
+    if (error) {
+      showErr(error.code === 'email_not_confirmed'
+        ? t('err_not_confirmed')
+        : t('err_bad_creds'));
+      $('#loginPass').value = '';
+      $('#loginPass').focus();
+      return;
+    }
     initApp();
+  });
+
+  /* возврат по ссылке «сменить пароль» из письма */
+  sb.auth.onAuthStateChange(async (event) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      const np = await showPrompt(t('recovery_prompt'), {
+        title: t('recovery_prompt'),
+        okText: t('save'),
+        cancelText: t('cancel')
+      });
+      if (np === null) return; // отменено
+      if (np.length < 6) { showToast(t('err_pass_short'), 'error'); return; }
+      const { error } = await sb.auth.updateUser({ password: np });
+      if (error) showToast(t('recovery_fail') + error.message, 'error');
+      else showToast(t('recovery_ok'), 'success');
+    }
   });
 
   sb.auth.getSession().then(({ data }) => { if (data.session) initApp(); });
@@ -140,6 +196,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (db) { deleteBuilding(Number(db.dataset.delBld)); return; }
     const delBed = e.target.closest('[data-del-bed]');
     if (delBed) { removeBed(Number(delBed.dataset.delBed)); return; }
+    const renBed = e.target.closest('[data-ren-bed]');
+    if (renBed) { renameBed(Number(renBed.dataset.renBed)); return; }
     const addB = e.target.closest('[data-add-bed]');
     if (addB) { addBed(Number(addB.dataset.addBed)); return; }
     const addR = e.target.closest('[data-add-room]');
@@ -207,6 +265,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
   $('#viewCalendar').addEventListener('click', e=>{
     if (e.target.closest('#calPrev')) { calYM.m--; if (calYM.m < 0) { calYM.m = 11; calYM.y--; } renderCalendar(); return; }
     if (e.target.closest('#calNext')) { calYM.m++; if (calYM.m > 11) { calYM.m = 0; calYM.y++; } renderCalendar(); return; }
+    /* заявки с сайта: подтвердить / отклонить (файл 21-site-bookings.js) */
+    const cf = e.target.closest('[data-site-confirm]');
+    if (cf) { setSiteBookingStatus(cf.dataset.siteConfirm, 'confirmed'); return; }
+    const rj = e.target.closest('[data-site-reject]');
+    if (rj) { setSiteBookingStatus(rj.dataset.siteReject, 'rejected'); return; }
     const bar = e.target.closest('[data-bar]');
     if (bar) {
       const b = state.bookings.find(x => x.id === bar.dataset.bar);
@@ -285,6 +348,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
       }
     } else if (t.dataset.roomBeds !== undefined) {
       resizeRoom(Number(t.dataset.roomBeds), Number(t.value));
+    } else if (t.dataset.bedName !== undefined) {
+      for (const apt of state.apartments) {
+        for (const room of apt.rooms) {
+          const bed = room.beds.find(b => b.id === Number(t.dataset.bedName));
+          if (bed) { bed.name = t.value.trim(); save(); return; }
+        }
+      }
     }
   });
 

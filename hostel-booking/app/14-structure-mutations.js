@@ -42,8 +42,8 @@ function addRoom(aptId, type){
     name = 'ABCEFGHKLMN'.split('').find(ch=>!used.includes(ch)) || 'X';
   }
   const room = { id: state.nextId++, name, type, beds: [] };
-  const count = type==='capsule' ? 4 : 4;
-  for (let i=1;i<=count;i++) room.beds.push({ id: state.nextId++, num: i });
+  const count = 1; // по умолчанию одно место; остальные добавляются вручную
+  for (let i=1;i<=count;i++) room.beds.push({ id: state.nextId++, num: i, name: '' });
   apt.rooms.push(room);
   save(); render();
 }
@@ -75,7 +75,7 @@ function addBed(roomId){
     const room = apt.rooms.find(r=>r.id===roomId);
     if (!room) continue;
     const num = room.beds.length ? Math.max(...room.beds.map(b=>b.num)) + 1 : 1;
-    room.beds.push({ id: state.nextId++, num });
+    room.beds.push({ id: state.nextId++, num, name: '' });
     save(); render();
     return;
   }
@@ -108,6 +108,20 @@ async function renameApartment(aptId){
   apt.floor = result.floor;
   save(); render();
 }
+/* переименование койки: пустое значение → вернуть стандартную подпись (Комната-Н / Бокс N) */
+async function renameBed(bedId){
+  const f = findBed(bedId);
+  if (!f) return;
+  const result = await showPrompt(t('ren_bed_title', { label: bedLabel(f.room, f.bed) }), {
+    title: t('ren_bed_title', { label: bedLabel(f.room, f.bed) }),
+    defaultValue: f.bed.name || '',
+    okText: t('save'),
+    cancelText: t('cancel')
+  });
+  if (result === null) return;
+  f.bed.name = result.trim();
+  save(); render();
+}
 async function resizeRoom(roomId, newCount){
   for (const apt of state.apartments) {
     const room = apt.rooms.find(r=>r.id===roomId);
@@ -115,7 +129,7 @@ async function resizeRoom(roomId, newCount){
     newCount = Math.max(0, Math.min(40, newCount));
     if (newCount > room.beds.length) {
       let num = room.beds.length ? Math.max(...room.beds.map(b=>b.num)) : 0;
-      while (room.beds.length < newCount) room.beds.push({ id: state.nextId++, num: ++num });
+      while (room.beds.length < newCount) room.beds.push({ id: state.nextId++, num: ++num, name: '' });
     } else if (newCount < room.beds.length) {
       const removed = room.beds.slice(newCount);
       const live = bookingsOnBeds(removed.map(b=>b.id)).length;
