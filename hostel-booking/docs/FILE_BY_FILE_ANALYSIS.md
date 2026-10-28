@@ -16,9 +16,6 @@
 ### manifest.webmanifest
 - PWA-манифест: имя, цвета, иконки.
 
-### vercel.json
-- Настройки деплоя: no-cache, noindex.
-
 ## app/
 
 - **01-constants.js** — ICONS, `SUPABASE_URL`, `SUPABASE_KEY`, `LOGINS`, `authMode`, `sb`, `state`, `me`, `hostel`, `settings`, функции прав, `rowToBk`/`bkToRow`.

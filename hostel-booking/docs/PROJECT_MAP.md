@@ -13,7 +13,6 @@ C:.
 │   index.html
 │   styles.css
 │   manifest.webmanifest
-│   vercel.json
 │   .gitignore
 │   README.md
 │
