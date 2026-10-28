@@ -20,7 +20,7 @@ async function exportData(){
   const phones = state.bookings.filter(b => b.phone).length;
   const ok = await showConfirm(
     'ЭКСПОРТ — скачать резервную копию.\n\n' +
-    `В файл попадут: ${state.apartments.length} квартир(ы), ${state.bookings.length} броней, ` +
+    `В файл попадут: ${state.apartments.length} апартамент(ов), ${state.bookings.length} броней, ` +
     `${finance.length} операций бухгалтерии.\n` +
     (phones ? `Внимание: там будут персональные данные гостей (${phones} телефон(ов)) — храните файл в надёжном месте.\n\n` : '\n') +
     'Скачать?',
@@ -39,7 +39,7 @@ async function importWarn(){
   const ok = await showConfirm(
     '⚠️ ИМПОРТ ЗАМЕНЯЕТ ВСЕ ДАННЫЕ ХОСТЕЛА.\n\n' +
     `Будет УДАЛЕНО: ${state.bookings.length} броней, ${finance.length} операций бухгалтерии, ` +
-    `вся нынешняя планировка (${state.apartments.length} квартир) — и вместо них встанут данные из файла.\n\n` +
+    `вся нынешняя планировка (${state.apartments.length} апартаментов) — и вместо них встанут данные из файла.\n\n` +
     'Изменения увидят все сотрудники и все устройства. Отменить это будет нельзя.\n\n' +
     'Перед заменой я автоматически скачаю копию текущих данных.\n\nПродолжить и выбрать файл?',
     {
@@ -62,7 +62,7 @@ function importData(file){
         throw new Error(t('imp_bad_format'));
       const ok = await showConfirm(
         'Последняя проверка.\n\n' +
-        `Из файла будет загружено: ${data.apartments.length} квартир(ы), ${data.bookings.length} броней, ` +
+        `Из файла будет загружено: ${data.apartments.length} апартамент(ов), ${data.bookings.length} броней, ` +
         `${(data.finance || []).length} операций.\n` +
         `Текущие данные (${state.bookings.length} броней) будут стёрты безвозвратно.\n\nЗаменить?`,
         {
