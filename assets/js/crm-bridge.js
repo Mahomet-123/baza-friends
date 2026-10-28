@@ -16,7 +16,7 @@
 
   // ⚠️ ЗАМЕНИТЬ ПРИ ДЕПЛОЕ на реальные значения своего проекта:
   const SUPABASE_URL = 'https://juahnruwcfbvrrlruojv.supabase.co';
-  const SITE_KEY = 'ЗАМЕНИ_НА_СВОЙ_СЕКРЕТ'; // должен совпадать с SITE_BOOKING_KEY Edge Function
+  const SITE_KEY = 'o1B2s3H4i5Y6s7E8c9R0e9T8n7i6Y5c4L3u2C1h'; // должен совпадать с SITE_BOOKING_KEY Edge Function
 
   const FN = SUPABASE_URL + '/functions/v1';
 
