@@ -12,6 +12,8 @@
 
    Настройки заполняются при деплое (см. hostel-booking/DEPLOY.md):
    - SUPABASE_URL — адрес вашего проекта Supabase;
+   - SUPABASE_KEY — публичный (publishable) ключ того же проекта: его требует
+                   шлюз Edge Functions в заголовке apikey;
    - SITE_KEY     — тот же секрет, что задан в секретах Edge Function
                    (SITE_BOOKING_KEY). */
 (function () {
@@ -21,6 +23,10 @@
   // ⚠️ ЗАМЕНИТЬ ПРИ ДЕПЛОЕ на реальные значения своего проекта:
   const SUPABASE_URL = 'https://juahnruwcfbvrrlruojv.supabase.co';
   const SITE_KEY = 'o1B2s3H4i5Y6s7E8c9R0e9T8n7i6Y5c4L3u2C1h'; // должен совпадать с SITE_BOOKING_KEY Edge Function
+  // публичный (publishable) ключ проекта: шлюз Edge Functions требует его
+  // в заголовке apikey даже при выключенной JWT-проверке. Ключ публичный —
+  // он и так рассчитан на то, чтобы быть в браузере (RLS всё равно держит).
+  const SUPABASE_KEY = 'sb_publishable_xBMrQ8eigUTt-ByLx5z6eA_rsmTysSb';
 
   const FN = SUPABASE_URL + '/functions/v1';
 
@@ -33,6 +39,7 @@
       method: body ? 'POST' : 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
         'x-site-key': SITE_KEY,
       },
     };
