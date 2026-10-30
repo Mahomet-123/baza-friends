@@ -15,6 +15,9 @@
 //   supabase secrets set HOSTEL_OWNER_ID="<uuid владельца хостела>"
 //     (получить: select id from auth.users where email='fransdelaser+hostel@gmail.com';)
 
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { withSupabase } from "jsr:@supabase/server@^1";
+
 const corsHeaders: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-site-key',
@@ -113,7 +116,8 @@ function firstFreeBed(room: any, occ: any[], ci: string, co: string): number | n
   return null;
 }
 
-Deno.serve(async (req: Request) => {
+export default {
+  fetch: withSupabase({ auth: ["publishable", "secret"] }, async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
 
@@ -196,4 +200,5 @@ Deno.serve(async (req: Request) => {
     console.error('create-booking failed', e);
     return json({ error: 'insert_failed', detail }, 500);
   }
-});
+}),
+};

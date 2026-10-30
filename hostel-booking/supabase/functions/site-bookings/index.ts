@@ -7,6 +7,9 @@
 // create-booking). Запись идёт под service_role, поэтому RLS не ослабляется,
 // а анонимный гость в таблицу не попадает.
 
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { withSupabase } from "jsr:@supabase/server@^1";
+
 const corsHeaders: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-site-key',
@@ -87,7 +90,8 @@ async function setStatus(id: string, status: string): Promise<void> {
   if (!res.ok) throw new Error(`update ${res.status}`);
 }
 
-Deno.serve(async (req: Request) => {
+export default {
+  fetch: withSupabase({ auth: ["publishable", "secret"] }, async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   // 1) проверка общего секрета сайта
@@ -116,4 +120,5 @@ Deno.serve(async (req: Request) => {
     console.error('site-bookings failed', e);
     return json({ error: 'failed', detail: String(e) }, 500);
   }
-});
+}),
+};

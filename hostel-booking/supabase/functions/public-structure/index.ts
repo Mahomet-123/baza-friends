@@ -11,6 +11,9 @@
 // Секреты (те же, что у create-booking):
 //   SITE_BOOKING_KEY / SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY / HOSTEL_OWNER_ID
 
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { withSupabase } from "jsr:@supabase/server@^1";
+
 const corsHeaders: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-site-key',
@@ -65,7 +68,8 @@ async function loadOccupancy(): Promise<any[]> {
   return await res.json();
 }
 
-Deno.serve(async (req: Request) => {
+export default {
+  fetch: withSupabase({ auth: ["publishable", "secret"] }, async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (req.method !== 'GET') return json({ error: 'method_not_allowed' }, 405);
 
@@ -125,4 +129,5 @@ Deno.serve(async (req: Request) => {
     console.error('public-structure failed', e);
     return json({ error: 'failed', detail: String(e) }, 500);
   }
-});
+}),
+};
